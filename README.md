@@ -23,6 +23,7 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 - Udemy
 	- [First AI model with Python](Udemy/1_First%20AI%20model%20with%20Python/README.md)
 	- [Machine Learning & Artificial Intelligence with Python](Udemy/2_Machine%20Learning%20%26%20Artificial%20Intelligence%20with%20Python/README.md)
+	- [Python Development and Python Programming Fundamentals](Udemy/3_Python%20Development%20and%20Python%20Programming%20Fundamentals/README.md)
 - Coursera
 	- _Add courses as folders under `Coursera/`_
 - edX
