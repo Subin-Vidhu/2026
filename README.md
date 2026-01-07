@@ -26,6 +26,7 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 	- [Python Development and Python Programming Fundamentals](Udemy/3_Python%20Development%20and%20Python%20Programming%20Fundamentals/README.md)
 - Coursera
 	- [IBM Ethical Hacking with Open Source Tools Professional Certificate](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/Readme.md)
+	- [Ethical Hacking with Kali Linux](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/C2_Ethical%20Hacking%20with%20Kali%20Linux/Readme.md)
 - edX
 	- _Add courses as folders under `edX/`_
 
