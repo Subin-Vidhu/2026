@@ -115,3 +115,39 @@
         - <img src="images/image-11.png" alt="Common Linux Commands 5" width="200"/>
         - <img src="images/image-12.png" alt="Common Linux Commands 6" width="200"/>
         - <img src="images/image-13.png" alt="Common Linux Commands 7" width="200"/>
+    
+- Module 1: Continuation:
+
+    - Setting up Kali Linux through Virtual Box
+    
+        -  First install virtual box, Refer [here](https://www.coursera.org/learn/ethical-hacking-with-kali-linux/ungradedWidget/OL5IR/reading-guide-to-setting-up-virtualbox)
+
+        - Kali Linux Installation Steps | Refer video [here](https://www.coursera.org/learn/ethical-hacking-with-kali-linux/lecture/GZT8r/kali-linux-installation-and-setup)
+
+            - Download Kali Linux ISO from the official website: [Kali Linux Downloads](https://www.kali.org/get-kali/#kali-platforms)
+
+            - Open VirtualBox and click on "New" to create a new virtual machine.
+
+            - Name the VM (e.g., "Kali Linux") and select "Linux" as the type and "Debian (64-bit)" as the version. Click "Next."
+
+            - Allocate memory (RAM) for the VM. A minimum of 2048 MB is recommended. Click "Next."
+
+            - Choose "Create a virtual hard disk now" and click "Create."
+
+            - Select "VDI (VirtualBox Disk Image)" and click "Next."
+
+            - Choose "Dynamically allocated" and click "Next."
+
+            - Set the size of the virtual hard disk (minimum 20 GB recommended) and click "Create."
+
+            - Select the newly created VM and click on "Settings."
+
+            - Go to the "Storage" section, click on the empty optical drive, and then click on the disk icon to choose a virtual optical disk file.
+
+            - Browse to the location where you downloaded the Kali Linux ISO file and select it. Click "OK."
+
+            - Start the VM by clicking on "Start."
+
+            - Follow the on-screen instructions to install Kali Linux on the virtual machine.
+
+        - Best practices for using Kali Linux in VirtualBox | Refer [here](https://www.coursera.org/learn/ethical-hacking-with-kali-linux/ungradedWidget/sYcX5/reading-best-practices-for-installing-and-configuring-kali-linux)
