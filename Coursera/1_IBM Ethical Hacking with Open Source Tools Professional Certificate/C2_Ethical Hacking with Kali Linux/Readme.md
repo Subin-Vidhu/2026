@@ -151,3 +151,5 @@
             - Follow the on-screen instructions to install Kali Linux on the virtual machine.
 
         - Best practices for using Kali Linux in VirtualBox | Refer [here](https://www.coursera.org/learn/ethical-hacking-with-kali-linux/ungradedWidget/sYcX5/reading-best-practices-for-installing-and-configuring-kali-linux)
+
+        - Best practices for securing Kali Linux | Refer [here](https://www.coursera.org/learn/ethical-hacking-with-kali-linux/ungradedWidget/K3jDZ/reading-best-practices-for-securing-kali-linux)
