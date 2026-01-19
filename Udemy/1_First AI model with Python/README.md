@@ -1,1 +1,1 @@
-- Course 1: First AI model with Python
+- Course 1: First AI model with Python | [Course Link](https://www.udemy.com/course/machine-learning-build-your-first-ai-model-with-python)
