@@ -50,4 +50,6 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 
 *Happy coding and learning in 2026!*
 
-- New Life: 2026 - Day 16 - Coursera Plus Renewed
+- New Life: 2026 - Day 17 | 90 days cycle starts today.
+
+- Coursera Plus Renewed on Jan 18, 2026
