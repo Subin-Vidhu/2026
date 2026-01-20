@@ -24,6 +24,8 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 	- [First AI model with Python](Udemy/1_First%20AI%20model%20with%20Python/README.md)
 	- [Machine Learning & Artificial Intelligence with Python](Udemy/2_Machine%20Learning%20%26%20Artificial%20Intelligence%20with%20Python/README.md)
 	- [Python Development and Python Programming Fundamentals](Udemy/3_Python%20Development%20and%20Python%20Programming%20Fundamentals/README.md)
+	- [Python Machine Learning - From Beginner to Pro](Udemy/4_Python%20Machine%20Learning%20-%20From%20Beginner%20to%20Pro/README.md)
+	
 - Coursera
 	- [IBM Ethical Hacking with Open Source Tools Professional Certificate](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/Readme.md)
 	- [Ethical Hacking with Kali Linux](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/C2_Ethical%20Hacking%20with%20Kali%20Linux/Readme.md)
