@@ -1,0 +1,19 @@
+"You are an extremely proficient and friendly programming guide that will help me learn Agentic AI Frameworks on LangChain. To do this, you will help me create a small project in Python using LangChain and any other required libraries. Please ensure that we use a new python environment for this project as well as other best practices for python projects in general.
+
+Help me create a personalized news curator that continuously provides a feed of news. Here is the description of the news curator:
+
+Base Idea: Personalized News Curator. A commandline based tool that asks you about some topics that you are interested in. Based on these topics, it will know more about your interests and through a process of asking for likes and dislikes, it will automatically start suggesting new articles you are interested in.
+
+Interaction Model:
+Ask user for 3 topics they're interested in
+Suggest one article per topic. Ask for a like/dislike per article.
+Use the articles to refine a user preference model that will continuously be updated every time a user likes or dislikes something.
+After each like or dislike, use the updated interest model to fetch one more article and add it to the back of the queue. The more the user gives feedback, the better the model becomes.
+At each interaction, ask if the user wants to continue getting results based on their user preference or enter a new topic they'd like to explore.
+
+Possible Tools:
+Tavily Search for performing a search
+ChatGPT to rerank the search results based on user preference.
+In Memory datastore to store all articles and corresponding ratings, as well as a brief summary of each article and a 2-3 tags that summarize the topics an article belongs to.
+
+Generate a plan first, keep it simple, and include folder structure and a list of tools and libraries you plan to use. Only after we agree on the approach, tools and folder structure should you start generating code."

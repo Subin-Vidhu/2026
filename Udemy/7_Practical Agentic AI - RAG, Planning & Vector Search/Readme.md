@@ -1,0 +1,1 @@
+- Course [Link](https://www.udemy.com/course/practical-agentic-ai-rag-planning-vector-search)
