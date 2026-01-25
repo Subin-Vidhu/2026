@@ -30,6 +30,8 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 - Coursera
 	- [IBM Ethical Hacking with Open Source Tools Professional Certificate](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/Readme.md)
 	- [Ethical Hacking with Kali Linux](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/C2_Ethical%20Hacking%20with%20Kali%20Linux/Readme.md)
+	- [IBM AI Engineering Professional Certificate](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/Readme.md)
+		- [ML with Python](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/1_ML%20with%20Python/Readme.md) | [Course Certificate](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/1_ML%20with%20Python/Machine%20Learning%20with%20Python.pdf)
 - edX
 	- _Add courses as folders under `edX/`_
 

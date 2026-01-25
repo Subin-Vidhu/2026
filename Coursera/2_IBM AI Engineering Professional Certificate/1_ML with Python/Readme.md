@@ -80,3 +80,52 @@
 
     - Random forests use bagging to train multiple decision trees on bootstrapped data, improving accuracy by reducing variance.
 
+- Module 4 Summary:
+
+    - Clustering is a machine learning technique used to group data based on similarity, with applications in customer segmentation and anomaly detection.
+
+    - K-means clustering partitions data into clusters based on the distance between data points and centroids but struggles with imbalanced or non-convex clusters.
+
+    - Heuristic methods such as silhouette analysis, the elbow method, and the Davies-Bouldin Index help assess k-means performance.
+
+    - DBSCAN is a density-based algorithm that creates clusters based on density and works well with natural, irregular patterns.
+
+    - HDBSCAN is a variant of DBSCAN that does not require parameters and uses cluster stability to find clusters.
+
+    - Hierarchical clustering can be divisive (top-down) or agglomerative (bottom-up) and produces a dendrogram to visualize the cluster hierarchy.
+
+    - Dimension reduction simplifies data structure, improves clustering outcomes, and is useful in tasks such as face recognition (using eigenfaces).
+
+    - Clustering and dimension reduction work together to improve model performance by reducing noise and simplifying feature selection.
+
+    - PCA, a linear dimensionality reduction method, minimizes information loss while reducing dimensionality and noise in data.
+
+    - t-SNE and UMAP are other dimensionality reduction techniques that map high-dimensional data into lower-dimensional spaces for visualization and analysis.
+
+- Module 5 Summary:
+
+    - Supervised learning evaluation assesses a model's ability to predict outcomes for unseen data, often using a train/test split to estimate performance.
+
+    - Key metrics for classification evaluation include accuracy, confusion matrix, precision, recall, and the F1 score, which balances precision and recall.
+
+    - R- egression model evaluation metrics include MAE, MSE, RMSE, R-squared, and explained variance to measure prediction accuracy.
+
+    - Unsupervised learning models are evaluated for pattern quality and consistency using metrics like Silhouette Score, Davies-Bouldin Index, and Adjusted Rand Index.
+
+    - Dimensionality reduction evaluation involves Explained Variance Ratio, Reconstruction Error, and Neighborhood Preservation to assess data structure retention.
+
+    - Model validation, including dividing data into training, validation, and test sets, helps prevent overfitting by tuning hyperparameters carefully.
+
+    - Cross-validation methods, especially K-fold and stratified cross-validation, support robust model validation without overfitting to test data.
+
+    - Regularization techniques, such as ridge (L2) and lasso (L1) regression, help prevent overfitting by adding penalty terms to linear regression models.
+
+    - Data leakage occurs when training data includes information unavailable in real-world data, which is preventable by separating data properly and mindful feature selection.
+
+    - Common modelling pitfalls include misinterpreting feature importance, ignoring class imbalance, and making causal inferences without sufficient evidence.”  
+
+    - Feature importance assessments should consider redundancy, scale sensitivity, and avoid misinterpretation, as well as inappropriate assumptions about causation.
+
+- Module 6 Summary:
+
+    - Final Exam...
