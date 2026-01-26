@@ -1,0 +1,56 @@
+This is great.
+However it keeps going deeper into a rabbit hole with the current topics. Can you help change the user interaction flow so that the user can opt to give a new topic to add to the mix? How would you handle the existing preference model vs exploring new topics? Please state your plan first before writing ANY code.
+"
+
+"
+Now let's address some problems that I can see
+
+1. The preferences are resest each time. I'd liek to save my preferences.
+2. I can see the likes and dislikes in my reading history. But can I get a summary of what my prefernces are as seen by the preference model?
+3. "
+"
+Please use something more standard like sqlite instead for storage. Please ensure to store all inforation regarding the articles, urls, summary and feedback.
+"
+
+"
+The get next action menu isn't visible properly on the terminal. The colors for the individual letters make it invisible in my vscode terminal and I can't see the first option at all.
+"
+
+"
+A lot of code is squeezed into one file. Please split the execution up into smaller components so that it is easy to read and change smaller components instead of the large main file. Use python best practices to do so.
+"
+
+"
+As the history grows larger, what are some ways to condense the preferences history to represent the user better while not having to store raw text? I'm concerned that maintaining the history in memory at all times might prove to be a bottleneck.
+
+Suggest some improvements, explain the approaches to me and let's weigh the pros and cons together.
+"
+
+"I prefer the last approach which uses the vector dbs to store all the data, uses the representation to find the center and use that to rerank the search results.
+
+How should we best use the vector db?
+
+Right now we formulate a search query based on either a representative set of the user interests or based on a search query. How will this search paradigm chang enow that we use vector dbs? What are some options? Talk through these first before proceeding to later tasks and phases.
+
+I'd like to change the project in the following steps:
+
+Implement the interface to ChromaDB first.
+Then switch from storing into ChromaDB instead of SQLite.
+Ensure that we store all the information we stored before, and that we use ChromaDb to store the embeddings of the summary of the articles as an extra embedding vector.
+Give me the steps to create a local vector db if possible. If not, then give me the options of cloud service I can use.
+Then switch the main program to use the new storage system."
+
+"
+The broad search query approach does have a fundamental flaw however. How will we know what that is? The user could be interested in several topics and they cannot be covered via a "broad" search query. That is not an approach that enables preferences to evolve over time and inform the model for better results over time.
+
+Let's change our approach to account for a user having multiple emerging interest as they read more articles.
+
+Considering that we're doing a search adn then re-rank, we can have a single vector representation that reranks results so that part still works. However for the initial search query, let's also maintain a set of topics that user is interested in. This will be updated every time a user provides feedback and will come from the topics extracted from the article they interact with. We can weight this set of topics based on the feedback they give on each topic. +1 for all topics pertaining to an article they like and -1 for all topics related to an article they dislike.
+
+Let's pick one of the broad topics (possibly at random, we can go further into how to pick from these at a later stage), use that to formulate the broad query, then rerank the results based on the center of the vector representation of the user preferences.
+
+How does this approach sound? Let's think through the possible weaknesses first before implementing."
+
+"What are some suggestions to make the recommendations and exploration better? I want fresher results, more authoritative news sources to be preferred, articles which have little content and too many links to be scored lower, discover trending topics and news in some way etc... Talk through it with me before implementing anything... I want to go through the approaches first considering difficulty to implement, scalability, improvement to user experience, possibly more sources and tools to use etc..."
+
+"Please add tests, refactor as necessary and make sure the tests pass before committing."
