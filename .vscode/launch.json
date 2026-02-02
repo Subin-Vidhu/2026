@@ -10,6 +10,14 @@
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug: Day2 Email Agent",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/Udemy/8_100 AI Agents in 100 Days 2026/Day2 - CLI Email Summarization Agent/agent.py",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/Udemy/8_100 AI Agents in 100 Days 2026/Day2 - CLI Email Summarization Agent"
     }
   ]
 }
