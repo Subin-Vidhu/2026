@@ -1,0 +1,37 @@
+{
+  "meeting_title": "Q1 Product Planning",
+  "objective": "Decide priorities for Q1 roadmap and align teams",
+  "total_duration_minutes": 60,
+  "agenda": [
+    {
+      "topic": "Welcome & Context",
+      "time_minutes": 5,
+      "owner": "Product Lead",
+      "outcome": "Review of objective and presentation of the feature backlog."
+    },
+    {
+      "topic": "Feature Review",
+      "time_minutes": 10,
+      "owner": "Product Lead",
+      "outcome": "All potential features for Q1 are reviewed and understood by stakeholders."
+    },
+    {
+      "topic": "Discussion & Alignment",
+      "time_minutes": 20,
+      "owner": "Product Lead",
+      "outcome": "Consensus reached on trade-offs, technical feasibility, and market impact."
+    },
+    {
+      "topic": "Decision: Select Top 3 Features",
+      "time_minutes": 15,
+      "owner": "Product Lead",
+      "outcome": "Top 3 features are formally decided and approved for Q1 development."
+    },
+    {
+      "topic": "Action Items & Next Steps",
+      "time_minutes": 10,
+      "owner": "Product Lead",
+      "outcome": "Clear ownership assigned and follow-up schedule established."
+    }
+  ]
+}
