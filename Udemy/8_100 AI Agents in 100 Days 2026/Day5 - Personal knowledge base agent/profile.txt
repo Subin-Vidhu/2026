@@ -1,0 +1,137 @@
+[SECTION] BASIC_INFO
+
+Age: ~27 years
+
+Location: Kanayannur, Kerala, India
+
+Current role: AI / Machine Learning Engineer
+
+Total experience: ~4–4.5 years in AI/ML
+
+Education: B.Tech in Electronics & Communication (Kannur University), M.Tech in Signal Processing
+
+[SECTION] PROFESSIONAL_GOALS
+
+Grow as a strong AI/ML engineer with deeper fundamentals in algorithms and systems
+
+Prepare for job change and technical interviews (DSA, system design, ML)
+
+Reach advanced level in Data Structures & Algorithms from a near‑beginner starting point
+
+Build a portfolio of solid coding, ML projects, and research/industry experience
+
+Explore and potentially pursue international master’s programs in AI / Robotics (Europe, UK)
+
+[SECTION] EDUCATION_AND_STUDY_ABROAD
+
+Interested in MSc / Master’s programs focused on AI, ML, Robotics
+
+Has compared universities like York and Aston (pros/cons, rankings, outcomes)
+
+Actively looks for scholarships, assistantships, and funding options
+
+Needs help with SOPs, motivation letters, and application positioning
+
+[SECTION] TECH_STACK_AND_TOOLS
+
+Primary language: Python
+
+Comfortable with ML frameworks, scripting, virtual environments, and tooling
+
+Heavy user of online coding and learning platforms (LeetCode, GeeksforGeeks, YouTube, Coursera, Udemy)
+
+Uses GitHub for code and projects, and is open to using AI tools (like interview prep AIs)
+
+[SECTION] DSA_AND_CODING_GOALS
+
+Current self‑assessment: below beginner in DSA, wants systematic progression
+
+Wants clear path from basics (arrays, strings, hashing, two pointers, recursion, trees, graphs, DP) to advanced topics
+
+Plans to use LeetCode for structured practice and Codeforces for harder, contest‑style problems
+
+Interested in Coursera DSA tracks such as “Algorithmic Toolbox” and “Data Structures and Algorithms Specialization”
+
+Likes multi‑month roadmaps (e.g., months 0–2 fundamentals, 2–4 contests, etc.) with concrete problem targets
+
+[SECTION] LEARNING_STYLE
+
+Prefers concise but dense explanations with clear structure
+
+Likes step‑by‑step roadmaps and checklists over vague advice
+
+Comfortable with technical terminology but prefers practical examples and use‑cases
+
+Uses videos (YouTube, courses), written notes, and coding practice side‑by‑side
+
+Appreciates follow‑up problem sets or exact links/resources after a concept is explained
+
+[SECTION] INTERVIEW_PREPARATION
+
+Preparing for AI/ML roles and possibly product‑based software roles
+
+Wants detailed technical + behavioral question banks tailored to experience
+
+Uses or is open to using: Google Interview Warmup, Pramp, Interviewsby.ai, InterviewBit peer mocks, etc.
+
+Values realistic mock interviews, feedback, and improvement plans
+
+Needs help summarizing experience, explaining projects, and answering “tell me about yourself”‑type questions
+
+[SECTION] DAILY_ROUTINE_AND_LIFESTYLE
+
+Early riser: typically wakes around 4:00–4:30 AM
+
+Morning routine includes exercise and getting ready for work
+
+Engages in running, walking, and general fitness
+
+Interested in skincare and wellness topics, occasionally seeks routines/product advice
+
+Balances full‑time job, learning, and trading/investing
+
+[SECTION] FINANCE_AND_TRADING
+
+Active user of Upstox for equities and commodities, including silver on MCX
+
+Has experience pledging holdings for margin and wants to understand risks and rules clearly
+
+Interested in order types like stop‑loss, target, bracket/OCO, and GTT for risk control
+
+Follows macro events like India’s Union Budget and how they affect sectors and pledged positions
+
+Focuses on both short‑term trading decisions and long‑term wealth‑building strategies
+
+[SECTION] PRODUCTIVITY_AND_HABITS
+
+Values structured days, daily prioritization, and focusing on high‑impact work
+
+Uses early mornings for deep work or learning whenever possible
+
+Likes clear weekly/monthly plans for skills (DSA, ML, applications)
+
+Open to systems like time‑boxing, outcome‑driven agendas, and habit tracking
+
+[SECTION] PLATFORM_PREFERENCES
+
+Learning: Coursera, Udemy, YouTube, GeeksforGeeks, NeetCode/Striver‑style playlists
+
+Coding practice: LeetCode (primary), interested in Codeforces and possibly CodeChef
+
+Trading: Upstox for stocks and MCX, follows Indian market news and sector updates
+
+Communication: Works in English, wants to steadily improve spoken fluency and clarity
+
+[SECTION] HOW_AI_AGENT_SHOULD_HELP
+
+Generate concrete DSA roadmaps mapped to resources (courses + problem sets)
+
+Suggest weekly plans that fit around full‑time work and early‑morning schedule
+
+Provide tailored interview prep: questions, model answers, feedback templates, and mock interview structures
+
+Support study‑abroad journey: university shortlists, SOP drafts, scholarship strategies
+
+Explain trading and investing concepts clearly without giving direct stock tips
+
+Always favor actionable, high‑signal advice over generic motivation
