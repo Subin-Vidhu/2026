@@ -1,6 +1,6 @@
 import json
 import numpy as np
-import hashlib
+from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from datetime import date
 
@@ -10,33 +10,22 @@ client = OpenAI(
     api_key="ollama"  # Ollama doesn't require a real API key
 )
 
+# Load embedding model (cached after first download)
+embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
 CHAT_MODEL = "glm-4.7-flash:latest"
-EMBEDDING_DIM = 384  # Dimension for embeddings
 
 
-def read_notes(path="notes.txt"):
-# def read_notes(path="profile.txt"):
+# def read_notes(path="notes.txt"):
+def read_notes(path="profile.txt"):
     with open(path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f.readlines() if line.strip()]
 
 
 def embed_texts(texts):
-    """Generate deterministic embeddings from text using hash-based approach"""
-    embeddings = []
-    for text in texts:
-        # Create deterministic vector from text hash
-        hash_obj = hashlib.sha256(text.encode())
-        hash_bytes = hash_obj.digest()
-        
-        # Convert bytes to embedding vector
-        embedding = np.frombuffer(hash_bytes, dtype=np.uint8)
-        # Tile to reach desired dimension and normalize
-        embedding = np.tile(embedding, (EMBEDDING_DIM // len(hash_bytes)) + 1)[:EMBEDDING_DIM]
-        embedding = embedding.astype(np.float32) / 255.0
-        
-        embeddings.append(embedding.tolist())
-    
-    return embeddings
+    """Generate semantic embeddings using Sentence-Transformers"""
+    # Returns embeddings as list of lists (compatible with cosine_similarity)
+    embeddings = embedding_model.encode(texts, convert_to_tensor=False)
+    return embeddings.tolist()
 def cosine_similarity(a, b):
     a = np.array(a)
     b = np.array(b)
