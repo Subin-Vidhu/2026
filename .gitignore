@@ -1,3 +1,8 @@
 venv
-Personal/
+# Ignore everything in Personal
+Personal/*
+
+# But allow this specific folder
+!Personal/health-agent-mcp/
+!Personal/health-agent-mcp/**
 Udemy Auto-Enrollment System/
