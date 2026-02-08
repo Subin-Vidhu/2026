@@ -26,6 +26,7 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 	- [Python Development and Python Programming Fundamentals](Udemy/3_Python%20Development%20and%20Python%20Programming%20Fundamentals/README.md)
 	- [Python Machine Learning - From Beginner to Pro](Udemy/4_Python%20Machine%20Learning%20-%20From%20Beginner%20to%20Pro/README.md)
 	- [Python for MLOPS](Udemy/6_Python%20for%20MLOPS/Readme.md)
+	- [Build local LLM applications using Python and Ollama](Udemy/9_%20Build%20local%20LLM%20applications%20using%20Python%20and%20Ollama/Readme.md)
 	
 - Coursera
 	- [IBM Ethical Hacking with Open Source Tools Professional Certificate](Coursera/1_IBM%20Ethical%20Hacking%20with%20Open%20Source%20Tools%20Professional%20Certificate/Readme.md)
