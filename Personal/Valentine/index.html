@@ -4,49 +4,63 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>💘 AI Valentine Simulator</title>
+<title>💘 Ente Valentine – Monsoon Edition</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
-<body>
+<body class="light">
 
-<div class="top-controls">
-<button onclick="toggleTheme()" id="themeBtn">🌙</button>
-<button onclick="toggleSound()" id="soundBtn">🔊</button>
+<canvas id="rain"></canvas>
+<canvas id="confetti"></canvas>
+
+<div class="controls">
+<button onclick="toggleRain()">🌧 Rain</button>
+<button onclick="toggleRainSound()">🔊 Rain Sound</button>
+<button onclick="toggleTheme()">🌙 Theme</button>
 </div>
 
-<div class="container">
-<h1>💘 AI Valentine Simulator</h1>
+<div id="app">
 
-<select id="modeSelect" onchange="changeMode()">
-<option value="cute">🌸 Cute</option>
-<option value="dramatic">🎬 Dramatic</option>
-<option value="chaotic">🌪 Chaotic</option>
-<option value="mysterious">🔮 Mysterious</option>
+<section class="screen active" id="step1">
+<h1>💘 Ente Valentine</h1>
+<p>Shall we begin a little romantic monsoon journey?</p>
+<input type="text" id="nameInput" placeholder="Enter their name..." />
+<button onclick="goToStep(2)">Start the Journey 🌴</button>
+</section>
+
+<section class="screen" id="step2">
+<h2>Choose Your Love Mood</h2>
+<select id="modeSelect">
+<option value="college">🌸 College Nostalgia</option>
+<option value="cinematic">🎬 Cinematic Confession</option>
+<option value="urban">🌆 Modern Romance</option>
+<option value="poetic">📜 Poetic Soul</option>
 </select>
+<button onclick="goToStep(3)">Continue 💌</button>
+</section>
 
-<br><br>
-
-<button onclick="generateMessage()">💌 Generate AI Love Message</button>
-
+<section class="screen" id="step3">
+<h2>AI is writing your story...</h2>
+<button onclick="generateMessage()">Generate Love Message ✨</button>
 <div id="output"></div>
+<button onclick="goToStep(4)">Next 💖</button>
+</section>
 
-<br>
-
+<section class="screen" id="step4">
+<h2>Will You Be My Valentine?</h2>
 <button onclick="celebrate()">YES 💘</button>
 <button id="noBtn" onmouseover="moveNo()">NO 😈</button>
-
 <br><br>
-
-<button onclick="downloadScreenshot()">📸 Download Screenshot</button>
-<button onclick="shareLink()">🔗 Generate Share Link</button>
-
-<h3>💖 Local Leaderboard</h3>
+<button onclick="downloadScreenshot()">📸 Save This Moment</button>
+<button onclick="generateShare()">🔗 Share</button>
 <div id="leaderboard"></div>
+</section>
 
 </div>
 
-<canvas id="confetti"></canvas>
+<audio id="rainAudio" loop>
+<source src="https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2393.mp3" type="audio/mpeg">
+</audio>
 
 <script src="script.js"></script>
 </body>

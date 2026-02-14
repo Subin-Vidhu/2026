@@ -1,96 +1,59 @@
 
-let currentMode = "cute";
-let soundEnabled = true;
+let currentStep = 1;
+let rainActive = false;
+let rainInterval;
+let rainSoundActive = false;
 
-window.onload = () => {
-const saved = localStorage.getItem("theme");
-if(saved){
-document.body.classList.add(saved);
-}else{
-if(window.matchMedia("(prefers-color-scheme: dark)").matches){
-document.body.classList.add("dark");
-}else{
-document.body.classList.add("light");
+function goToStep(step){
+document.getElementById("step"+currentStep).classList.remove("active");
+currentStep = step;
+document.getElementById("step"+currentStep).classList.add("active");
 }
-}
-updateLeaderboard();
-};
 
 function toggleTheme(){
-if(document.body.classList.contains("light")){
-document.body.classList.replace("light","dark");
-localStorage.setItem("theme","dark");
-}else{
-document.body.classList.replace("dark","light");
-localStorage.setItem("theme","light");
-}
-}
-
-function toggleSound(){
-soundEnabled=!soundEnabled;
-document.getElementById("soundBtn").innerText = soundEnabled ? "🔊":"🔇";
-}
-
-function changeMode(){
-currentMode=document.getElementById("modeSelect").value;
+document.body.classList.toggle("dark");
 }
 
 async function generateMessage(){
-const output=document.getElementById("output");
-output.innerText="Generating magic... ✨";
+const name = document.getElementById("nameInput").value || "someone special";
+const mode = document.getElementById("modeSelect").value;
+const output = document.getElementById("output");
 
-let promptMap={
-cute:"Write a cute playful romantic Valentine message under 40 words.",
-dramatic:"Write a dramatic cinematic love confession under 40 words.",
-chaotic:"Write a funny chaotic meme-style Valentine message under 40 words.",
-mysterious:"Write a mysterious poetic love message under 40 words."
+const prompts = {
+college:`Write a nostalgic Kerala-style college romantic message for ${name} under 50 words.`,
+cinematic:`Write a deep emotional cinematic love confession for ${name} under 50 words.`,
+urban:`Write a modern urban romantic message set in Kerala for ${name}.`,
+poetic:`Write a short poetic romantic message for ${name}.`
 };
 
+output.innerText = "Writing magic... ✨";
+
 try{
-const response=await fetch("https://llama3.protosonline.in/v1/chat/completions",{
+const res = await fetch("https://llama3.protosonline.in/v1/chat/completions",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 model:"llama3",
 messages:[
-{role:"system",content:"You are a creative romantic assistant."},
-{role:"user",content:promptMap[currentMode]}
+{role:"system",content:"You are a creative romantic writer inspired by Kerala monsoon evenings."},
+{role:"user",content:prompts[mode]}
 ],
 temperature:0.9,
-max_tokens:80
+max_tokens:100
 })
 });
 
-const data=await response.json();
-
-const text = data.choices?.[0]?.message?.content || "Love is loading...";
-const cleaned = text
-  .replace(/^"+|"+$/g, "")      // remove wrapping quotes
-  .replace(/\n+/g, " ")         // remove excessive line breaks
-  .trim();
-
-typeWriter(cleaned);
-
+const data = await res.json();
+const text = data.choices?.[0]?.message?.content || "Love loading...";
+output.innerText = text.replace(/^"+|"+$/g,"");
 }catch(e){
-output.innerText="AI is shy today 😅";
+output.innerText = "AI is shy today 😅";
 }
-}
-
-function typeWriter(text){
-const output=document.getElementById("output");
-output.innerText="";
-let i=0;
-let interval=setInterval(()=>{
-output.innerText+=text.charAt(i);
-i++;
-if(i>=text.length) clearInterval(interval);
-},25);
 }
 
 function celebrate(){
 launchConfetti();
 saveYes();
-if(soundEnabled) new Audio("https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3").play();
 }
 
 function moveNo(){
@@ -122,17 +85,70 @@ if(p.y>canvas.height)p.y=0;
 setInterval(draw,20);
 }
 
+function toggleRain(){
+rainActive=!rainActive;
+if(rainActive) startRain();
+else stopRain();
+}
+
+function startRain(){
+const canvas=document.getElementById("rain");
+const ctx=canvas.getContext("2d");
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+
+let drops=Array.from({length:300},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,length:Math.random()*20+10,speed:Math.random()*5+5}));
+
+rainInterval=setInterval(()=>{
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.strokeStyle="rgba(173,216,230,0.5)";
+ctx.lineWidth=1;
+
+drops.forEach(d=>{
+ctx.beginPath();
+ctx.moveTo(d.x,d.y);
+ctx.lineTo(d.x,d.y+d.length);
+ctx.stroke();
+d.y+=d.speed;
+if(d.y>canvas.height){d.y=-20;d.x=Math.random()*canvas.width;}
+});
+},30);
+
+setInterval(()=>{
+if(Math.random()>0.85){
+document.body.classList.add("lightning");
+setTimeout(()=>{document.body.classList.remove("lightning");},200);
+}
+},5000);
+}
+
+function stopRain(){
+clearInterval(rainInterval);
+const canvas=document.getElementById("rain");
+const ctx=canvas.getContext("2d");
+ctx.clearRect(0,0,canvas.width,canvas.height);
+}
+
+function toggleRainSound(){
+const audio=document.getElementById("rainAudio");
+rainSoundActive=!rainSoundActive;
+if(rainSoundActive) audio.play();
+else audio.pause();
+}
+
 function downloadScreenshot(){
 html2canvas(document.body).then(canvas=>{
 const link=document.createElement("a");
-link.download="valentine.png";
+link.download="ente-valentine.png";
 link.href=canvas.toDataURL();
 link.click();
 });
 }
 
-function shareLink(){
-const url=window.location.origin + window.location.pathname + "?mode="+currentMode;
+function generateShare(){
+const name=document.getElementById("nameInput").value||"";
+const mode=document.getElementById("modeSelect").value;
+const url=window.location.origin+window.location.pathname+"?name="+encodeURIComponent(name)+"&mode="+mode;
 navigator.clipboard.writeText(url);
 alert("Share link copied! 💘");
 }
@@ -141,10 +157,5 @@ function saveYes(){
 let count=localStorage.getItem("yesCount")||0;
 count++;
 localStorage.setItem("yesCount",count);
-updateLeaderboard();
-}
-
-function updateLeaderboard(){
-let count=localStorage.getItem("yesCount")||0;
 document.getElementById("leaderboard").innerText="YES clicks: "+count;
 }
