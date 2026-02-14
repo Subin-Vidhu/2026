@@ -140,6 +140,7 @@
             width: 100%;
             max-width: 400px;
             animation: fadeInUp 0.6s ease;
+            position: relative; /* For absolute positioning of NO button */
         }
 
         /* Typography */
@@ -375,10 +376,11 @@
             display: flex;
             gap: 1rem;
             justify-content: center;
+            align-items: center;
             margin-top: 2rem;
-            flex-wrap: wrap;
             position: relative;
-            min-height: 120px;
+            min-height: 250px;
+            padding: 2rem 0;
         }
 
         .yes-btn {
@@ -392,12 +394,22 @@
         }
 
         .no-btn {
-            padding: 1rem 2rem;
-            background: linear-gradient(135deg, #666, #888);
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            padding: 1.25rem 2.5rem;
+            background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative;
             z-index: 1;
+            min-width: 120px;
+            color: white;
+            cursor: pointer;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+        
+        .no-btn:hover {
+            background: linear-gradient(135deg, #7f8c8d, #95a5a6);
         }
 
         /* Loading Animation */
@@ -766,7 +778,7 @@
                 
                 <div class="proposal-buttons">
                     <button class="btn yes-btn" id="yesBtn">YES 💘</button>
-                    <button class="btn no-btn" id="noBtn">No</button>
+                    <button class="btn no-btn" id="noBtn">NO 😔</button>
                 </div>
                 
                 <p class="subtitle" id="noMessage" style="margin-top: 1.5rem; min-height: 1.5rem;"></p>
@@ -797,6 +809,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script>
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+        
         // Global State
         const state = {
             username: '',
@@ -970,9 +985,71 @@
             });
         }
 
-        // Subtitle typewriter with Malayalam
-        const subtitleText = "Shall we begin a little romantic മഴക്കാല journey?";
+        // Subtitle typewriter - romantic with subtle Malayalam
+        const subtitleText = "Shall we begin a little romantic monsoon journey?";
         typeWriter(document.getElementById('subtitle'), subtitleText, 40);
+
+        // Sound System
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const sounds = {
+            enabled: false
+        };
+
+        // Simple sound generator
+        function playSound(type) {
+            if (!sounds.enabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+                    
+                case 'dodge':
+                    oscillator.frequency.value = 400;
+                    oscillator.type = 'square';
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.15);
+                    break;
+                    
+                case 'celebrate':
+                    // Multi-tone celebration
+                    [600, 800, 1000].forEach((freq, i) => {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.value = freq;
+                        osc.type = 'sine';
+                        gain.gain.setValueAtTime(0.2, audioContext.currentTime + i * 0.1);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5 + i * 0.1);
+                        osc.start(audioContext.currentTime + i * 0.1);
+                        osc.stop(audioContext.currentTime + 0.5 + i * 0.1);
+                    });
+                    break;
+                    
+                case 'transition':
+                    oscillator.frequency.value = 600;
+                    oscillator.type = 'sine';
+                    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                    break;
+            }
+        }
 
         // STEP 1: Name Input
         const nameInput = document.getElementById('nameInput');
@@ -983,9 +1060,14 @@
             startBtn.disabled = value.length < 2;
         });
 
+        nameInput.addEventListener('focus', () => {
+            playSound('click');
+        });
+
         startBtn.addEventListener('click', () => {
             state.username = nameInput.value.trim();
             if (state.username.length >= 2) {
+                playSound('transition');
                 transitionToStep('step2');
             }
         });
@@ -1002,6 +1084,7 @@
 
         modeCards.forEach(card => {
             card.addEventListener('click', () => {
+                playSound('click');
                 modeCards.forEach(c => c.classList.remove('selected'));
                 card.classList.add('selected');
                 state.selectedMode = card.dataset.mode;
@@ -1011,6 +1094,7 @@
 
         continueBtn.addEventListener('click', () => {
             if (state.selectedMode) {
+                playSound('transition');
                 transitionToStep('step3');
                 generateAIMessage();
             }
@@ -1019,10 +1103,10 @@
         // STEP 3: AI Generation
         const loadingMessages = [
             "Writing your magic... ✨",
-            "Sprinkling മഴ romance... 🌧️",
+            "Sprinkling romance in the rain... 🌧️",
             "Consulting the monsoon muse... 💭",
-            "Weaving കവിത for you... 📝",
-            "Almost ready... പ്രണയം awaits 💝"
+            "Weaving words from the heart... 📝",
+            "Almost ready... something beautiful awaits 💝"
         ];
 
         let loadingMessageIndex = 0;
@@ -1043,10 +1127,10 @@
             startLoadingAnimation();
             
             const prompts = {
-                college: `Write a romantic confession message to ${state.username} capturing the innocent sweetness of Kerala college love - bike rides in the monsoon, sharing chai, കോളേജ് days, stolen glances in the library. Use 1-2 Malayalam words naturally. Keep it 40-60 words, warm and nostalgic.`,
-                cinematic: `Write a romantic confession to ${state.username} as if you're in a Malayalam cinema monsoon scene - think Manju Warrier, Dulquer, that dramatic pause. Use cinematic Malayalam film language. 40-60 words, bold and heartfelt with 1-2 Malayalam words.`,
-                modern: `Write a romantic confession to ${state.username} in modern Kerala language - like late night texts, കാപ്പി shop meetings, genuine connection. Mix English and 1-2 Malayalam words naturally. 40-60 words, contemporary and real.`,
-                poetic: `Write a romantic confession to ${state.username} with poetic, lyrical language inspired by Kerala's monsoons - use metaphors, imagery. Include 2-3 Malayalam words like മഴ, കാറ്റ്, പ്രണയം naturally. 40-60 words, deep and timeless.`
+                college: `Write a romantic confession to ${state.username} capturing innocent college love - monsoon bike rides, stolen glances, library moments, shared umbrellas. Make it warm, nostalgic, and heartfelt. 45-60 words.`,
+                cinematic: `Write a passionate romantic confession to ${state.username} like a movie monsoon scene - dramatic, heart-racing, with that perfect pause moment. Bold, cinematic, genuinely romantic. 45-60 words.`,
+                modern: `Write a genuine romantic confession to ${state.username} in contemporary language - late night thoughts, real feelings, authentic connection. Conversational but deeply romantic. 45-60 words.`,
+                poetic: `Write a beautiful, lyrical romantic confession to ${state.username} using rain and monsoon metaphors. Poetic, imagery-rich, touching. You may include 1-2 Malayalam words naturally if it flows. 45-60 words.`
             };
 
             try {
@@ -1092,12 +1176,12 @@
                 console.error('AI Error:', error);
                 stopLoadingAnimation();
                 
-                // Fallback messages with Malayalam flavor
+                // Fallback messages - romantic with subtle cultural flavor
                 const fallbackMessages = {
-                    college: `${state.username}, മഴ പെയ്യുന്ന ആ കോളേജ് വൈകുന്നേരങ്ങൾ ഓർമ്മയുണ്ടോ? How we'd share one umbrella and still get drenched? Every raindrop whispers your name. Will you be mine?`,
-                    cinematic: `${state.username}, like a Manju Warrier-Mohanlal പ്രണയം, my heart races when I see you. The മഴ falls, background score plays, and all I want is to confess - you're my greatest love story. Say YES?`,
-                    modern: `${state.username}, 2am thoughts: You. Rain sounds: remind me of you. കാപ്പി and conversation, that's all I need. This isn't കല്യാണം yet, but what we could be feels more real than anything. Try with me?`,
-                    poetic: `${state.username}, നീ എന്റെ മഴയാണ്, moonlight, everything. In Kerala's monsoon heart, you're the rhythm. മഴ പെയ്യുമ്പോൾ, I think only of you. Be my Valentine, my കാറ്റ്, my everything?`
+                    college: `${state.username}, remember those monsoon evenings? Sharing an umbrella, getting drenched anyway, laughing through the rain. Every drop reminds me of you. Those were the best days. Will you be mine again?`,
+                    cinematic: `${state.username}, this feels like that perfect movie moment - rain falling, hearts racing, everything else fading away. You're the scene I want to replay forever. Say yes to this story with me?`,
+                    modern: `${state.username}, 2am thoughts: You. Rain sounds: remind me of us. Coffee conversations that last hours. This isn't just infatuation - it feels real, like coming home. Want to try something beautiful together?`,
+                    poetic: `${state.username}, you're the rain to my parched soul, moonlight through monsoon clouds. When the മഴ falls, I think only of you. Be my Valentine, my everything, my always?`
                 };
                 
                 state.aiMessage = fallbackMessages[state.selectedMode];
@@ -1130,6 +1214,7 @@
         });
 
         document.getElementById('proposalBtn').addEventListener('click', () => {
+            playSound('transition');
             transitionToStep('step4');
         });
 
@@ -1139,109 +1224,89 @@
         const noMessage = document.getElementById('noMessage');
 
         const noMessages = [
-            "അയ്യേ... Are you sure? 🥺",
-            "എന്താ ഇത്... Think about it... 💭",
-            "Really? The പൂരം is crying... 🌧️",
-            "കഷ്ടം... Last chance... 💔",
-            "ദയവായി? Please? 🙏",
-            "മഴ പെയ്യുന്നു... The rain knows... 🌧️",
-            "എന്റെ മോനേ... Think again... 💭",
-            "സത്യമോ? Really? 😢"
+            "Are you sure? 🥺",
+            "Think about the rain... 💭",
+            "Really? My heart is breaking... 😢",
+            "The fireflies are crying... ✨",
+            "One more chance? 💔",
+            "Please... ദയവായി? 🙏",
+            "The monsoon knows our story... 🌧️",
+            "Don't go... stay with me... 💫"
         ];
 
-        // NO button - dodge on hover/approach (IMPOSSIBLE TO CLICK!)
-        let noBtnRect = noBtn.getBoundingClientRect();
-        
-        function updateNoBtnRect() {
-            noBtnRect = noBtn.getBoundingClientRect();
-        }
+        // NO button - stays in container, moves on hover (like viral examples)
+        let isStep4Active = false;
         
         function moveNoButton() {
             state.noAttemptCount++;
             document.getElementById('noAttempts').textContent = state.noAttemptCount;
             
-            // Show Malayalam-inspired message
+            // Play dodge sound
+            playSound('dodge');
+            
+            // Show romantic message
             if (state.noAttemptCount <= noMessages.length) {
                 noMessage.textContent = noMessages[state.noAttemptCount - 1];
+            } else {
+                noMessage.textContent = "Still trying? You know the answer... 💝";
             }
             
             // Increase YES button size
-            const scale = 1 + (state.noAttemptCount * 0.1);
-            yesBtn.style.transform = `scale(${Math.min(scale, 1.5)})`;
+            const scale = 1 + (state.noAttemptCount * 0.15);
+            yesBtn.style.transform = `scale(${Math.min(scale, 2.5)})`;
             
-            // Calculate safe position away from cursor
+            // Get container bounds
             const container = document.querySelector('#step4 .glass-card');
             const containerRect = container.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
             
-            const maxX = containerRect.width - 120;
-            const maxY = containerRect.height - 80;
-            const newX = Math.random() * maxX;
-            const newY = Math.random() * maxY;
+            // Calculate max positions (relative to container)
+            const maxX = containerRect.width - btnRect.width - 20;
+            const maxY = containerRect.height - btnRect.height - 20;
             
+            // Random position within container
+            const randomX = Math.random() * Math.max(0, maxX);
+            const randomY = Math.random() * Math.max(0, maxY);
+            
+            // Apply position (absolute within container)
             noBtn.style.position = 'absolute';
-            noBtn.style.left = newX + 'px';
-            noBtn.style.top = newY + 'px';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
             
-            // Shrink NO button progressively
-            const shrinkScale = Math.max(1 - (state.noAttemptCount * 0.12), 0.25);
+            // Shrink progressively
+            const shrinkScale = Math.max(1 - (state.noAttemptCount * 0.05), 0.5);
             noBtn.style.transform = `scale(${shrinkScale})`;
-            
-            // After 5 attempts, make it TINY and super fast
-            if (state.noAttemptCount > 5) {
-                noBtn.style.transition = 'all 0.1s ease';
-            }
-            
-            updateNoBtnRect();
         }
         
-        // Track mouse movement - dodge when cursor gets close
-        document.addEventListener('mousemove', (e) => {
-            if (steps.step4.classList.contains('hidden')) return;
-            
-            const distance = Math.sqrt(
-                Math.pow(e.clientX - (noBtnRect.left + noBtnRect.width / 2), 2) +
-                Math.pow(e.clientY - (noBtnRect.top + noBtnRect.height / 2), 2)
-            );
-            
-            // Dodge radius increases with attempts
-            const dodgeRadius = 100 + (state.noAttemptCount * 20);
-            
-            if (distance < dodgeRadius) {
+        // Move on hover (mouseenter)
+        noBtn.addEventListener('mouseenter', () => {
+            if (isStep4Active) {
                 moveNoButton();
             }
         });
         
-        // Also dodge on touch for mobile
-        document.addEventListener('touchmove', (e) => {
-            if (steps.step4.classList.contains('hidden')) return;
-            
-            const touch = e.touches[0];
-            const distance = Math.sqrt(
-                Math.pow(touch.clientX - (noBtnRect.left + noBtnRect.width / 2), 2) +
-                Math.pow(touch.clientY - (noBtnRect.top + noBtnRect.height / 2), 2)
-            );
-            
-            const dodgeRadius = 120 + (state.noAttemptCount * 15);
-            
-            if (distance < dodgeRadius) {
-                moveNoButton();
-            }
-        });
-        
-        // If they somehow click it (they won't!), still move it
+        // Prevent clicking - move instead
         noBtn.addEventListener('click', (e) => {
             e.preventDefault();
-            moveNoButton();
+            if (isStep4Active) {
+                moveNoButton();
+            }
         });
         
-        // Update rect when window resizes
-        window.addEventListener('resize', updateNoBtnRect);
+        // Also move on touch for mobile
+        noBtn.addEventListener('touchstart', (e) => {
+            if (isStep4Active) {
+                e.preventDefault();
+                moveNoButton();
+            }
+        });
 
         yesBtn.addEventListener('click', () => {
             state.yesClickCount++;
             localStorage.setItem('yesCount', state.yesClickCount);
             document.getElementById('yesCount').textContent = state.yesClickCount;
             
+            playSound('celebrate');
             celebrateYes();
         });
 
@@ -1362,9 +1427,16 @@
         const rainSound = document.getElementById('rainSound');
         document.getElementById('soundToggle').addEventListener('click', () => {
             state.soundEnabled = !state.soundEnabled;
+            sounds.enabled = state.soundEnabled;
+            
             if (state.soundEnabled) {
+                // Resume audio context if needed
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
                 rainSound.play().catch(() => {});
                 document.getElementById('soundToggle').style.opacity = '1';
+                playSound('click');
             } else {
                 rainSound.pause();
                 document.getElementById('soundToggle').style.opacity = '0.5';
@@ -1385,6 +1457,26 @@
             
             setTimeout(() => {
                 steps[stepName].classList.remove('hidden');
+                
+                // Initialize NO button tracking when step4 loads
+                if (stepName === 'step4') {
+                    isStep4Active = true;
+                    state.noAttemptCount = 0;  // Reset counter
+                    
+                    // Reset NO button to initial state
+                    noBtn.style.position = 'relative';
+                    noBtn.style.left = 'auto';
+                    noBtn.style.top = 'auto';
+                    noBtn.style.transform = 'scale(1)';
+                    
+                    // Clear message
+                    noMessage.textContent = '';
+                    
+                    // Reset YES button
+                    yesBtn.style.transform = 'scale(1)';
+                } else {
+                    isStep4Active = false;
+                }
             }, 300);
         }
 
@@ -1408,6 +1500,8 @@
                 e.preventDefault();
             }
         });
+        
+        }); // End DOMContentLoaded
     </script>
 </body>
 </html>
