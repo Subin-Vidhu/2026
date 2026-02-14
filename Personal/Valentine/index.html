@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💘 AI Valentine Simulator</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+
+<div class="top-controls">
+<button onclick="toggleTheme()" id="themeBtn">🌙</button>
+<button onclick="toggleSound()" id="soundBtn">🔊</button>
+</div>
+
+<div class="container">
+<h1>💘 AI Valentine Simulator</h1>
+
+<select id="modeSelect" onchange="changeMode()">
+<option value="cute">🌸 Cute</option>
+<option value="dramatic">🎬 Dramatic</option>
+<option value="chaotic">🌪 Chaotic</option>
+<option value="mysterious">🔮 Mysterious</option>
+</select>
+
+<br><br>
+
+<button onclick="generateMessage()">💌 Generate AI Love Message</button>
+
+<div id="output"></div>
+
+<br>
+
+<button onclick="celebrate()">YES 💘</button>
+<button id="noBtn" onmouseover="moveNo()">NO 😈</button>
+
+<br><br>
+
+<button onclick="downloadScreenshot()">📸 Download Screenshot</button>
+<button onclick="shareLink()">🔗 Generate Share Link</button>
+
+<h3>💖 Local Leaderboard</h3>
+<div id="leaderboard"></div>
+
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script src="script.js"></script>
+</body>
+</html>
