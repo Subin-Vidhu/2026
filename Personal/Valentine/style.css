@@ -1,0 +1,93 @@
+
+:root {
+--bg-light: linear-gradient(to top, #1e3c72, #2a5298);
+--bg-dark: linear-gradient(to top, #0f2027, #203a43, #2c5364);
+}
+
+body {
+margin:0;
+font-family: 'Segoe UI', sans-serif;
+background:var(--bg-light);
+color:white;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+overflow:hidden;
+transition:0.6s ease;
+}
+
+body.dark {
+background:var(--bg-dark);
+}
+
+.controls {
+position:fixed;
+top:15px;
+right:15px;
+z-index:5;
+}
+
+button, select, input {
+padding:10px 15px;
+margin:10px;
+border-radius:12px;
+border:none;
+cursor:pointer;
+font-size:14px;
+}
+
+button:hover {
+transform:scale(1.05);
+}
+
+.screen {
+display:none;
+max-width:500px;
+padding:30px;
+text-align:center;
+z-index:2;
+position:relative;
+}
+
+.screen.active {
+display:block;
+animation:fadeIn 0.6s ease;
+}
+
+#output {
+margin-top:20px;
+min-height:70px;
+white-space:pre-wrap;
+line-height:1.6;
+background:rgba(255,255,255,0.1);
+padding:15px;
+border-radius:12px;
+backdrop-filter:blur(6px);
+}
+
+canvas {
+position:fixed;
+top:0;
+left:0;
+pointer-events:none;
+z-index:0;
+}
+
+@keyframes fadeIn {
+from{opacity:0;transform:translateY(20px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+.lightning {
+animation:flash 0.3s ease;
+}
+
+@keyframes flash {
+0%{background:rgba(255,255,255,0.6);}
+100%{background:transparent;}
+}
+
+@media(max-width:600px){
+.screen{padding:20px;}
+}

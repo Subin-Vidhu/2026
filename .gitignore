@@ -1,8 +1,9 @@
 venv
 # Ignore everything in Personal
 Personal/*
-
+*.zip
 # But allow this specific folder
+!Personal/Valentine/
 !Personal/health-agent-mcp/
 !Personal/health-agent-mcp/**
 Udemy Auto-Enrollment System/
