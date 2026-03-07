@@ -3,6 +3,7 @@ venv
 Personal/*
 *.zip
 # But allow this specific folder
+!Personal/Codex_Trial/
 !Personal/Valentine/
 !Personal/health-agent-mcp/
 !Personal/health-agent-mcp/**

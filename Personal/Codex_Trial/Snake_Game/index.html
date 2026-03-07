@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberChipppyyy Snake</title>
+  <style>
+    :root {
+      --bg-1: #04020d;
+      --bg-2: #0a0b1f;
+      --neon-green: #32ff7e;
+      --neon-green-soft: #8dffb8;
+      --neon-purple: #bd3cff;
+      --text: #d9e0ff;
+      --danger: #ff4d7a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      font-family: "Consolas", "Courier New", monospace;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 20% 15%, #1a1135 0%, transparent 36%),
+        radial-gradient(circle at 80% 80%, #0d2a1d 0%, transparent 35%),
+        linear-gradient(150deg, var(--bg-1), var(--bg-2));
+      overflow: hidden;
+    }
+
+    .wrap {
+      width: min(92vw, 680px);
+      display: grid;
+      gap: 12px;
+      justify-items: center;
+    }
+
+    .hud {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      border: 1px solid #2d2f5c;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #0f1130cc, #080a1ccc);
+      box-shadow: 0 0 15px #4b2a9a66;
+      backdrop-filter: blur(3px);
+    }
+
+    .title {
+      font-size: clamp(14px, 2.2vw, 18px);
+      color: var(--neon-purple);
+      text-shadow: 0 0 8px #9c45ff, 0 0 18px #9c45ff;
+      letter-spacing: 1px;
+    }
+
+    .score {
+      font-size: clamp(15px, 2.4vw, 20px);
+      color: var(--neon-green-soft);
+      text-shadow: 0 0 8px #32ff7e, 0 0 16px #32ff7e;
+    }
+
+    canvas {
+      width: min(92vw, 640px);
+      aspect-ratio: 1 / 1;
+      border: 2px solid #2f376d;
+      border-radius: 14px;
+      background:
+        linear-gradient(180deg, #050613, #080c21);
+      box-shadow:
+        0 0 14px #25307a,
+        inset 0 0 26px #0f1a4b;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: #a9b0d9;
+      opacity: 0.9;
+      text-align: center;
+    }
+
+    .game-over {
+      color: var(--danger);
+      text-shadow: 0 0 8px #ff4d7a;
+      font-weight: 700;
+      opacity: 0;
+      transition: opacity 180ms ease;
+      min-height: 20px;
+    }
+
+    .game-over.show {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header class="hud">
+      <div class="title">CYBERCHIPPPYYY // SNAKE</div>
+      <div class="score">Score: <span id="score">0</span></div>
+    </header>
+
+    <canvas id="game" width="640" height="640" aria-label="CyberChipppyyy Snake board"></canvas>
+    <div class="game-over" id="gameOver">SYSTEM FAILURE. Press Space to reboot.</div>
+    <div class="hint">Controls: Arrow Keys or WASD | Space to restart</div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const scoreEl = document.getElementById("score");
+    const gameOverEl = document.getElementById("gameOver");
+
+    const cells = 32;
+    const size = canvas.width / cells;
+
+    const BASE_SPEED = 140;
+    const SPEED_STEP = 7;
+    const MIN_SPEED = 45;
+
+    let snake;
+    let direction;
+    let nextDirection;
+    let food;
+    let score;
+    let tickMs;
+    let lastTick;
+    let running;
+
+    let audioCtx;
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+    }
+
+    function beep({ freq = 440, type = "sine", duration = 0.08, gain = 0.06, slideTo = null }) {
+      if (!audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const amp = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      if (slideTo !== null) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(40, slideTo), now + duration);
+      }
+      amp.gain.setValueAtTime(0.0001, now);
+      amp.gain.exponentialRampToValueAtTime(gain, now + 0.01);
+      amp.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(amp);
+      amp.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.01);
+    }
+
+    function sfxStart() {
+      beep({ freq: 360, type: "triangle", duration: 0.07, gain: 0.04, slideTo: 560 });
+      setTimeout(() => beep({ freq: 480, type: "square", duration: 0.07, gain: 0.04, slideTo: 720 }), 65);
+    }
+
+    function sfxEat() {
+      beep({ freq: 620, type: "square", duration: 0.06, gain: 0.055, slideTo: 900 });
+      setTimeout(() => beep({ freq: 940, type: "triangle", duration: 0.05, gain: 0.045 }), 35);
+    }
+
+    function sfxTurn() {
+      beep({ freq: 310, type: "sine", duration: 0.03, gain: 0.02, slideTo: 280 });
+    }
+
+    function sfxFail() {
+      beep({ freq: 360, type: "sawtooth", duration: 0.2, gain: 0.06, slideTo: 120 });
+      setTimeout(() => beep({ freq: 170, type: "square", duration: 0.2, gain: 0.05, slideTo: 80 }), 80);
+    }
+
+    function randomFood() {
+      let p;
+      do {
+        p = { x: Math.floor(Math.random() * cells), y: Math.floor(Math.random() * cells) };
+      } while (snake.some((s) => s.x === p.x && s.y === p.y));
+      return p;
+    }
+
+    function restartGame() {
+      snake = [
+        { x: 10, y: 16 },
+        { x: 9, y: 16 },
+        { x: 8, y: 16 },
+      ];
+      direction = { x: 1, y: 0 };
+      nextDirection = { ...direction };
+      score = 0;
+      tickMs = BASE_SPEED;
+      food = randomFood();
+      lastTick = performance.now();
+      running = true;
+      scoreEl.textContent = "0";
+      gameOverEl.classList.remove("show");
+      ensureAudio();
+      sfxStart();
+    }
+
+    function setDirection(x, y) {
+      if (!running) return;
+      if (direction.x === -x && direction.y === -y) return;
+      nextDirection = { x, y };
+      ensureAudio();
+      sfxTurn();
+    }
+
+    function loseGame() {
+      running = false;
+      ensureAudio();
+      sfxFail();
+      gameOverEl.classList.add("show");
+    }
+
+    function update() {
+      direction = nextDirection;
+
+      const head = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y,
+      };
+
+      const hitWall = head.x < 0 || head.y < 0 || head.x >= cells || head.y >= cells;
+      const hitSelf = snake.some((seg) => seg.x === head.x && seg.y === head.y);
+
+      if (hitWall || hitSelf) {
+        loseGame();
+        return;
+      }
+
+      snake.unshift(head);
+
+      if (head.x === food.x && head.y === food.y) {
+        score += 1;
+        scoreEl.textContent = String(score);
+        food = randomFood();
+        tickMs = Math.max(MIN_SPEED, BASE_SPEED - score * SPEED_STEP);
+        ensureAudio();
+        sfxEat();
+      } else {
+        snake.pop();
+      }
+    }
+
+    function drawGrid() {
+      ctx.strokeStyle = "rgba(117, 97, 240, 0.12)";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= cells; i++) {
+        const p = i * size + 0.5;
+        ctx.beginPath();
+        ctx.moveTo(p, 0);
+        ctx.lineTo(p, canvas.height);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(0, p);
+        ctx.lineTo(canvas.width, p);
+        ctx.stroke();
+      }
+    }
+
+    function drawFood(time) {
+      const flicker = 0.55 + Math.sin(time * 0.025) * 0.25 + Math.random() * 0.15;
+      const px = food.x * size;
+      const py = food.y * size;
+
+      ctx.save();
+      ctx.shadowBlur = 20 + Math.random() * 8;
+      ctx.shadowColor = "#bd3cff";
+      ctx.fillStyle = `rgba(189, 60, 255, ${Math.min(1, flicker)})`;
+      const inset = 4 + Math.random() * 1.2;
+      ctx.fillRect(px + inset, py + inset, size - inset * 2, size - inset * 2);
+      ctx.restore();
+    }
+
+    function drawSnake() {
+      for (let i = snake.length - 1; i >= 0; i--) {
+        const seg = snake[i];
+        const px = seg.x * size;
+        const py = seg.y * size;
+        const head = i === 0;
+
+        ctx.save();
+        ctx.shadowBlur = head ? 22 : 14;
+        ctx.shadowColor = "#32ff7e";
+        ctx.fillStyle = head ? "#9dffbf" : "#32ff7e";
+        ctx.fillRect(px + 2, py + 2, size - 4, size - 4);
+        ctx.restore();
+      }
+    }
+
+    function draw(time) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawGrid();
+      drawFood(time);
+      drawSnake();
+    }
+
+    function loop(time) {
+      if (running && time - lastTick >= tickMs) {
+        update();
+        lastTick = time;
+      }
+      draw(time);
+      requestAnimationFrame(loop);
+    }
+
+    window.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+
+      if (key === " ") {
+        e.preventDefault();
+        restartGame();
+        return;
+      }
+
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
+        e.preventDefault();
+      }
+
+      if (key === "arrowup" || key === "w") setDirection(0, -1);
+      if (key === "arrowdown" || key === "s") setDirection(0, 1);
+      if (key === "arrowleft" || key === "a") setDirection(-1, 0);
+      if (key === "arrowright" || key === "d") setDirection(1, 0);
+    });
+
+    canvas.addEventListener("pointerdown", () => {
+      ensureAudio();
+      if (!running) restartGame();
+    });
+
+    restartGame();
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
+
