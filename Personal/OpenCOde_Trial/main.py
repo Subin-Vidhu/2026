@@ -15,7 +15,9 @@ from typing import Optional, List
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, Query
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+import asyncio
+import json
 
 app = FastAPI()
 
@@ -25,12 +27,25 @@ MY_APP_PORT = 8000
 ORTHANC_BASE = "http://localhost:8041"
 ORTHANC_AUTH = ("admin", "password")
 SOURCE_PATH = r"G:\A"
+
+# Optimized HTTP client settings for maximum throughput
+HTTP_CLIENT_LIMITS = httpx.Limits(
+    max_connections=120,
+    max_keepalive_connections=100,
+    keepalive_expiry=30.0
+)
+http_client = httpx.AsyncClient(
+    auth=ORTHANC_AUTH,
+    timeout=httpx.Timeout(90.0, connect=10.0),
+    http2=True,
+    limits=HTTP_CLIENT_LIMITS
+)
 # SOURCE_PATH = r"G:\A"
 # SOURCE_PATH = r"C:\Users\Subin-PC\Downloads\DIcom_test_data\RADON_TEST_DATA\cd_test_data"
 
 # CHANGE 1: Raise this dramatically — Orthanc is local, no network RTT
-# 8 was conservative for a real network. For localhost, 32–64 is safe.
-MAX_CONCURRENT_UPLOADS = 48
+# 8 was conservative for a real network. For localhost, 64-96 is safe for fast SSDs
+MAX_CONCURRENT_UPLOADS = 80
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_UPLOADS)
 
 progress_counter = 0
@@ -406,10 +421,6 @@ async def upload_single_file(client, file_path, total_files):
 
     async with semaphore:
         try:
-            # CHANGE 2: Use aiofiles for non-blocking reads.
-            # Previously, open() was synchronous — it blocked the entire event loop
-            # while the CD drive spun up. With aiofiles, the loop stays free to
-            # fire off other uploads while one file is being read from disk.
             async with aiofiles.open(file_path, "rb") as f:
                 content = await f.read()
             
@@ -419,11 +430,11 @@ async def upload_single_file(client, file_path, total_files):
             response = await client.post(
                 f"{ORTHANC_BASE}/instances",
                 content=content,
-                timeout=60.0
+                timeout=90.0
             )
 
             progress_counter += 1
-            if progress_counter % 100 == 0 or progress_counter == total_files:
+            if progress_counter % 200 == 0 or progress_counter == total_files:
                 percent = (progress_counter / total_files) * 100
                 print(f"[{get_ts()}] [PROGRESS] {progress_counter}/{total_files} ({percent:.1f}%)")
 
@@ -511,8 +522,7 @@ async def send_to_viewer(orthanc_study_ids: list) -> None:
         print("[CSTORE] No Orthanc study IDs collected — skipping C-STORE.")
         return
 
-    async with httpx.AsyncClient(auth=ORTHANC_AUTH, http2=True, timeout=30) as client:
-        modalities = await _list_modalities(client)
+    modalities = await _list_modalities(http_client)
 
     print(f"[CSTORE] Orthanc modalities found: {modalities if modalities else 'none'}")
     print(f"[CSTORE] {len(orthanc_study_ids)} study ID(s) ready for viewer selection via frontend.")
@@ -539,8 +549,7 @@ async def api_detect_drives():
 @app.get("/modalities")
 async def api_modalities():
     """Return list of DICOM modalities (viewers) registered in Orthanc."""
-    async with httpx.AsyncClient(auth=ORTHANC_AUTH, http2=True, timeout=30) as client:
-        modalities = await _list_modalities(client)
+    modalities = await _list_modalities(http_client)
     return {"modalities": modalities}
 
 
@@ -558,8 +567,7 @@ async def api_send_to_viewer(payload: dict):
     if not study_ids:
         return JSONResponse({"error": "No study IDs provided"}, status_code=400)
 
-    async with httpx.AsyncClient(auth=ORTHANC_AUTH, http2=True, timeout=300) as client:
-        ok = await _cstore_to_modality(client, modality, study_ids)
+    ok = await _cstore_to_modality(http_client, modality, study_ids)
 
     if ok:
         return {"status": "success", "modality": modality, "studies_sent": len(study_ids)}
@@ -574,6 +582,40 @@ async def api_send_to_viewer(payload: dict):
 async def api_progress():
     """Return current upload progress for the frontend progress bar."""
     return {"done": progress_counter, "total": progress_total}
+
+
+@app.get("/progress/stream")
+async def progress_stream():
+    """
+    Server-Sent Events endpoint for real-time progress updates.
+    Single long-lived connection - much more efficient than polling.
+    """
+    async def event_generator():
+        last_reported = -1
+        while True:
+            if progress_total > 0 and progress_counter > 0:
+                if progress_counter != last_reported:
+                    last_reported = progress_counter
+                    percent = round((progress_counter / progress_total) * 100, 1)
+                    data = json.dumps({
+                        "done": progress_counter,
+                        "total": progress_total,
+                        "percent": percent
+                    })
+                    yield f"data: {data}\n\n"
+                    
+                if progress_counter >= progress_total and progress_total > 0:
+                    data = json.dumps({
+                        "done": progress_counter,
+                        "total": progress_total,
+                        "percent": 100,
+                        "complete": True
+                    })
+                    yield f"data: {data}\n\n"
+                    break
+            await asyncio.sleep(0.3)
+    
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 @app.get("/scan")
 async def api_scan(path: str = Query(default=None, description="Override scan path")):
@@ -654,17 +696,8 @@ async def upload_study(payload: dict):
 
     print(f"[{get_ts()}] [UPLOAD-STUDY] Uploading {len(file_list)} file(s)...")
 
-    async with httpx.AsyncClient(
-        auth=ORTHANC_AUTH,
-        timeout=None,
-        http2=True,
-        limits=httpx.Limits(
-            max_connections=MAX_CONCURRENT_UPLOADS,
-            max_keepalive_connections=MAX_CONCURRENT_UPLOADS,
-        )
-    ) as client:
-        tasks = [upload_single_file(client, f, len(file_list)) for f in file_list]
-        results = await asyncio.gather(*tasks)
+    tasks = [upload_single_file(http_client, f, len(file_list)) for f in file_list]
+    results = await asyncio.gather(*tasks)
 
     captured = [i for i in results if i is not None]
     duration = time.monotonic() - t_start
@@ -701,28 +734,14 @@ async def fast_import():
     progress_total = total_files
     print(f"[{get_ts()}] [SERVER] Found {total_files} files. Starting import...")
 
-    # CHANGE 3: Enable HTTP/2. This lets httpx multiplex all requests over a
-    # single connection instead of opening 48 separate TCP connections to
-    # Orthanc. Drastically reduces connection-setup overhead.
-    # Requires: pip install httpx[http2]  (installs h2 library)
-    async with httpx.AsyncClient(
-        auth=ORTHANC_AUTH,
-        timeout=None,
-        http2=True,                          # <-- HTTP/2 multiplexing
-        limits=httpx.Limits(
-            max_connections=MAX_CONCURRENT_UPLOADS,
-            max_keepalive_connections=MAX_CONCURRENT_UPLOADS,
-        )
-    ) as client:
-        tasks = [upload_single_file(client, f, total_files) for f in files_to_process]
-        results = await asyncio.gather(*tasks)
+    tasks = [upload_single_file(http_client, f, total_files) for f in files_to_process]
+    results = await asyncio.gather(*tasks)
 
     captured = [i for i in results if i is not None]
     duration = time.monotonic() - t_start
 
     print(f"[{get_ts()}] [COMPLETE] {duration:.2f}s — {len(captured)} instances indexed.")
 
-    # Collect unique Orthanc study IDs from uploaded instances
     orthanc_study_ids = list({r for r in captured if r})
     print(f"[CSTORE] Collected {len(orthanc_study_ids)} unique Orthanc study ID(s).")
     await send_to_viewer(orthanc_study_ids)

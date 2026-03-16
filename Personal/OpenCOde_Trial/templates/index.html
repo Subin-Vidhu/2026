@@ -824,6 +824,8 @@
   // Store Orthanc study IDs returned after upload (for viewer selection)
   let pendingOrthancStudyIds = [];
   let selectedModality = '';
+  let eventSource = null;
+
   // ── Helpers ──────────────────────────────────────────
   const $ = id => document.getElementById(id);
 
@@ -839,6 +841,32 @@
     wrap.classList.toggle('show', show);
     $('progressFill').style.width = pct + '%';
     $('progressLabel').textContent = label;
+  }
+
+  function closeProgressSSE() {
+    if (eventSource) {
+      eventSource.close();
+      eventSource = null;
+    }
+  }
+
+  function startProgressSSE() {
+    closeProgressSSE();
+    eventSource = new EventSource(API + '/progress/stream');
+    eventSource.onmessage = (e) => {
+      const data = JSON.parse(e.data);
+      const pct = Math.min(99, data.percent);
+      showProgress(true, pct, `${data.done} / ${data.total} files (${pct}%)`);
+      if (data.complete) {
+        setTimeout(() => {
+          showProgress(true, 100, 'Complete');
+          setTimeout(() => closeProgressSSE(), 500);
+        }, 300);
+      }
+    };
+    eventSource.onerror = () => {
+      closeProgressSSE();
+    };
   }
 
   function formatDate(raw) {
@@ -977,17 +1005,7 @@
     btn.textContent = 'Uploading…';
     setStatus(`Uploading study ${idx + 1} (${study.files.length} files)…`, 'loading');
     showProgress(true, 5, 'Starting upload…');
-
-    let pollId = setInterval(async () => {
-      try {
-        const r = await fetch(API + '/progress');
-        const d = await r.json();
-        if (d.total > 0) {
-          const pct = Math.min(99, Math.round((d.done / d.total) * 100));
-          showProgress(true, pct, `${d.done} / ${d.total} files (${pct}%)`);
-        }
-      } catch(_){}
-    }, 1000);
+    startProgressSSE();
 
     try {
       const r = await fetch(API + '/upload-study', {
@@ -996,7 +1014,7 @@
         body: JSON.stringify({ files: study.files }),
       });
       const data = await r.json();
-      clearInterval(pollId);
+      closeProgressSSE();
       showProgress(true, 100, 'Upload complete');
 
       btn.outerHTML = `<span class="uploaded-label">✓ Done</span>`;
@@ -1008,7 +1026,7 @@
         <div><strong>Study Uploaded</strong><br>Files: <strong>${data.total_scanned}</strong> · Indexed: <strong>${data.successfully_indexed}</strong> · Time: <strong>${data.total_time_sec}s</strong></div>`;
 
       setStatus('Study uploaded successfully', 'active');
-      setTimeout(() => showProgress(false), 800);
+      setTimeout(() => { showProgress(false); closeProgressSSE(); }, 800);
 
       // Show viewer selection if studies were indexed
       if (data.orthanc_study_ids && data.orthanc_study_ids.length) {
@@ -1016,7 +1034,7 @@
         showViewerModal();
       }
     } catch (e) {
-      clearInterval(pollId);
+      closeProgressSSE();
       btn.disabled = false;
       btn.textContent = '⬆ Upload';
       const banner = $('importResult');
@@ -1033,22 +1051,12 @@
     showProgress(true, 5, 'Starting upload…');
     $('btnImport').disabled = true;
     $('importResult').classList.remove('show');
-
-    let pollId = setInterval(async () => {
-      try {
-        const r = await fetch(API + '/progress');
-        const d = await r.json();
-        if (d.total > 0) {
-          const pct = Math.min(99, Math.round((d.done / d.total) * 100));
-          showProgress(true, pct, `${d.done} / ${d.total} files (${pct}%)`);
-        }
-      } catch(_){}
-    }, 1500);
+    startProgressSSE();
 
     try {
       const r = await fetch(API + '/fast-import', { method: 'POST' });
       const data = await r.json();
-      clearInterval(pollId);
+      closeProgressSSE();
       showProgress(true, 100, 'Upload complete');
 
       // Mark all rows as done
@@ -1064,7 +1072,7 @@
         <div><strong>Import Complete</strong><br>Scanned: <strong>${data.total_scanned}</strong> files · Indexed: <strong>${data.successfully_indexed}</strong> instances · Time: <strong>${data.total_time_sec}s</strong></div>`;
 
       setStatus('Upload complete', 'active');
-      setTimeout(() => showProgress(false), 800);
+      setTimeout(() => { showProgress(false); closeProgressSSE(); }, 800);
 
       // Show viewer selection if studies were indexed
       if (data.orthanc_study_ids && data.orthanc_study_ids.length) {
@@ -1072,7 +1080,7 @@
         showViewerModal();
       }
     } catch (e) {
-      clearInterval(pollId);
+      closeProgressSSE();
       const banner = $('importResult');
       banner.className = 'result-banner show error';
       banner.innerHTML = `<span class="icon">✕</span><div><strong>Import Failed</strong><br>${e.message}</div>`;
