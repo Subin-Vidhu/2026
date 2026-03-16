@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DICOM Importer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-primary:   #0a0c10;
+      --bg-secondary: #11141c;
+      --bg-tertiary:  #181c26;
+      --bg-elevated:  #1e222e;
+      --surface:      #141820;
+      --border:       #2a2f3d;
+      --border-focus: #3d4555;
+      --text-primary: #e8eaed;
+      --text-secondary:#9aa0ad;
+      --text-muted:   #5f6572;
+      --accent:       #00b4d8;
+      --accent-hover: #00d4ff;
+      --accent-muted: rgba(0,180,216,.15);
+      --accent-glow:  rgba(0,180,216,.25);
+      --success:      #10b981;
+      --success-bg:   rgba(16,185,129,.12);
+      --warn:         #f59e0b;
+      --warn-bg:      rgba(245,158,11,.12);
+      --danger:       #ef4444;
+      --danger-bg:    rgba(239,68,68,.12);
+      --radius:       8px;
+      --radius-lg:    12px;
+      --font:         'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --shadow-sm:    0 2px 8px rgba(0,0,0,.35);
+      --shadow-lg:    0 8px 32px rgba(0,0,0,.5);
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ───────────────────────────────────────────── */
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 24px 80px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 32px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+    header .logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, var(--accent), #0077b6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    header .title-group {
+      text-align: left;
+    }
+    header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+    header p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    /* ── Cards ─────────────────────────────────────────── */
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .card:hover { border-color: var(--border-focus); }
+
+    .card-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title::before {
+      content: '';
+      width: 3px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    /* ── Buttons ───────────────────────────────────────── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 11px 24px;
+      font-family: var(--font);
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all .2s ease;
+    }
+    .btn:active { transform: scale(.98); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #0096c7);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(0,180,216,.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, var(--accent-hover), #00a8d4);
+      box-shadow: 0 6px 20px rgba(0,180,216,.45);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled {
+      opacity: .4;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1.5px solid var(--accent);
+    }
+    .btn-outline:hover {
+      background: var(--accent-muted);
+      border-color: var(--accent-hover);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    /* ── Drive Grid ────────────────────────────────────── */
+    .drive-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .drive-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px 16px;
+      background: var(--bg-tertiary);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all .2s ease;
+      text-align: center;
+    }
+    .drive-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-muted);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,.3);
+    }
+    .drive-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-muted);
+      box-shadow: 0 0 0 3px var(--accent-glow), 0 8px 20px rgba(0,0,0,.3);
+    }
+    .drive-card .drive-icon {
+      font-size: 1.8rem;
+      filter: grayscale(0.2);
+    }
+    .drive-card .drive-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+    .drive-card .drive-type {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+    }
+
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 22px 0;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+    .or-divider::before, .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .refresh-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: var(--font);
+      transition: color .2s;
+      margin-top: 10px;
+      padding: 6px 10px;
+      border-radius: 6px;
+    }
+    .refresh-link:hover { color: var(--accent); background: var(--accent-muted); }
+
+    .detecting-msg {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+    }
+    .detecting-msg .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Inputs ────────────────────────────────────────── */
+    .input-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .input-group input {
+      flex: 1;
+      padding: 12px 16px;
+      font-family: var(--font);
+      font-size: 0.9rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-primary);
+      outline: none;
+      transition: all .2s;
+    }
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .input-group input::placeholder { color: var(--text-muted); }
+
+    /* ── Status Badge ─────────────────────────────────── */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+      border: 1px solid var(--border);
+    }
+    .status-bar .dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+      transition: all .3s;
+    }
+    .status-bar .dot.active  { background: var(--success); box-shadow: 0 0 8px var(--success); }
+    .status-bar .dot.loading { background: var(--warn); animation: pulse 1s infinite; }
+    .status-bar .dot.error   { background: var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--warn); }
+      50%      { opacity: .5; box-shadow: none; }
+    }
+
+    /* ── Progress ──────────────────────────────────────── */
+    .progress-wrap {
+      display: none;
+      margin-top: 18px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+    .progress-wrap.show { display: block; }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      background: var(--bg-tertiary);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #48cae4);
+      border-radius: 4px;
+      transition: width .3s ease;
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+    .progress-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      text-align: right;
+      font-weight: 500;
+    }
+
+    /* ── Results Table ─────────────────────────────────── */
+    .results-section { display: none; }
+    .results-section.show { display: block; }
+
+    .table-wrap {
+      overflow-x: auto;
+      margin-top: 16px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--bg-secondary);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.83rem;
+    }
+    thead th {
+      text-align: left;
+      padding: 14px 16px;
+      background: var(--bg-tertiary);
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      font-size: 0.7rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .15s; }
+    tbody tr:hover { background: var(--accent-muted); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--accent-muted);
+      color: var(--accent);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Import Result Banner ─────────────────────────── */
+    .result-banner {
+      display: none;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      margin-top: 18px;
+      font-size: 0.86rem;
+      line-height: 1.6;
+    }
+    .result-banner.show { display: flex; align-items: center; gap: 12px; }
+    .result-banner.success {
+      background: var(--success-bg);
+      border: 1px solid rgba(16,185,129,.3);
+      color: #6ee7b7;
+    }
+    .result-banner.error {
+      background: var(--danger-bg);
+      border: 1px solid rgba(239,68,68,.3);
+      color: #fca5a5;
+    }
+    .result-banner .icon { font-size: 1.2rem; }
+
+    /* ── Stats Row ─────────────────────────────────────── */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      padding: 18px;
+      text-align: center;
+      border: 1px solid var(--border);
+    }
+    .stat-card .value {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.2;
+    }
+    .stat-card .label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      margin-top: 6px;
+    }
+
+    /* ── Empty state ───────────────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 50px 24px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .empty-state .icon { font-size: 2.2rem; margin-bottom: 14px; opacity: 0.6; }
+
+    /* ── Per-row upload button ─────────────────────────── */
+    .btn-sm {
+      padding: 6px 16px;
+      font-size: 0.76rem;
+      border-radius: 6px;
+    }
+    .uploaded-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      color: var(--success);
+    }
+
+    /* ── Viewer Modal ──────────────────────────────────── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn .25s ease;
+    }
+    .modal-overlay.show { display: flex; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      width: 90%;
+      max-width: 540px;
+      box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0,180,216,.08);
+      animation: slideUp .3s ease;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .modal-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.4rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: all .15s;
+      line-height: 1;
+    }
+    .modal-close:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    .modal-subtitle {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    .modality-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .modality-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 16px;
+      background: var(--bg-tertiary);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all .2s ease;
+      text-align: center;
+    }
+    .modality-card:hover {
+      border-color: var(--accent);
+      background: var(--accent-muted);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 24px rgba(0,0,0,.35);
+    }
+    .modality-card.selected {
+      border-color: var(--accent);
+      background: var(--accent-muted);
+      box-shadow: 0 0 0 3px var(--accent-glow), 0 10px 24px rgba(0,0,0,.35);
+    }
+    .modality-card .mod-icon {
+      font-size: 1.6rem;
+    }
+    .modality-card .mod-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1.5px solid var(--border);
+      transition: all .15s;
+    }
+    .btn-ghost:hover {
+      border-color: var(--text-muted);
+      color: var(--text-primary);
+      background: var(--bg-tertiary);
+    }
+
+    .modal-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+    .modal-info .info-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .no-modalities-msg {
+      text-align: center;
+      padding: 28px 20px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      background: var(--bg-tertiary);
+      border-radius: var(--radius);
+    }
+    .no-modalities-msg .icon { font-size: 2rem; margin-bottom: 10px; opacity: 0.7; }
+
+    .modal-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 36px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+    .modal-loading .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .viewer-success-banner {
+      display: none;
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      font-size: 0.84rem;
+      background: var(--success-bg);
+      border: 1px solid rgba(16,185,129,.3);
+      color: #6ee7b7;
+      margin-top: 16px;
+      text-align: center;
+    }
+    .viewer-success-banner.show { display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+    /* ── Footer ────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+
+<body>
+<div class="app" id="app">
+
+  <!-- Header -->
+  <header>
+    <div class="logo">◈</div>
+    <div class="title-group">
+      <h1>DICOM Importer</h1>
+      <p>Scan &amp; Upload DICOM studies to Orthanc</p>
+    </div>
+  </header>
+
+  <!-- Status -->
+  <div class="status-bar" id="statusBar">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">Ready</span>
+  </div>
+
+  <!-- Source Selection -->
+  <div class="card">
+    <div class="card-title">Select Source</div>
+
+    <!-- Auto-detected drives -->
+    <div id="drivesArea">
+      <div class="detecting-msg" id="detectingMsg">
+        <div class="spinner"></div>
+        <span>Detecting drives…</span>
+      </div>
+      <div class="drive-grid" id="driveGrid" style="display:none;"></div>
+      <div id="noDrivesMsg" style="display:none; font-size:0.82rem; color:var(--text-dim); padding:4px 0;">
+        No removable drives detected.
+      </div>
+      <button class="refresh-link" onclick="loadDrives()" title="Refresh drive list">↻ Refresh drives</button>
+    </div>
+
+    <div class="or-divider">or enter path manually</div>
+
+    <div class="input-group">
+      <input type="text" id="pathInput" placeholder="e.g. G:\  or  C:\DICOM_DATA" />
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btnScan" onclick="doScan()">
+        ⬡ Scan Studies
+      </button>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+    <div class="progress-label" id="progressLabel">Scanning…</div>
+  </div>
+
+  <!-- Scan Results -->
+  <div class="results-section" id="scanResults">
+    <div class="card">
+      <div class="card-title">Scan Results</div>
+
+      <div class="stats" id="statsRow">
+        <div class="stat-card"><div class="value" id="statPatients">0</div><div class="label">Patients</div></div>
+        <div class="stat-card"><div class="value" id="statStudies">0</div><div class="label">Studies</div></div>
+        <div class="stat-card"><div class="value" id="statImages">0</div><div class="label">Images</div></div>
+        <div class="stat-card"><div class="value" id="statTime">0s</div><div class="label">Scan Time</div></div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>ID</th>
+              <th>Sex</th>
+              <th>Age</th>
+              <th>Study</th>
+              <th>Date</th>
+              <th>Modality</th>
+              <th>Images</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="studyTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="btn-row" style="margin-top:20px;">
+        <button class="btn btn-primary" id="btnImport" onclick="doImport()">
+          ⬆ Upload All to Orthanc
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Result -->
+  <div class="result-banner" id="importResult"></div>
+
+  <!-- Viewer Success -->
+  <div class="viewer-success-banner" id="viewerSuccessBanner"></div>
+
+  <div class="footer">DICOM Importer · Powered by FastAPI &amp; Orthanc</div>
+</div>
+
+<!-- ── Viewer Selection Modal ─────────────────────────── -->
+<div class="modal-overlay" id="viewerModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>📡 Send to DICOM Viewer</h2>
+      <button class="modal-close" id="modalCloseBtn" onclick="closeViewerModal()">✕</button>
+    </div>
+    <div class="modal-subtitle" id="modalSubtitle">
+      Select a registered DICOM modality (viewer) to send the uploaded studies via C-STORE.
+    </div>
+    <div class="modal-info">
+      <span class="info-icon">ℹ️</span>
+      <span id="modalStudyCount">0 study(ies) ready to send</span>
+    </div>
+    <div id="modalContent">
+      <div class="modal-loading" id="modalLoading">
+        <div class="spinner"></div>
+        <span>Fetching modalities from Orthanc…</span>
+      </div>
+      <div class="modality-grid" id="modalityGrid" style="display:none;"></div>
+      <div class="no-modalities-msg" id="noModalitiesMsg" style="display:none;"></div>
+    </div>
+    <div class="modal-actions" id="modalActions" style="display:none;">
+      <button class="btn btn-ghost" onclick="closeViewerModal()">Skip</button>
+      <button class="btn btn-primary" id="btnSendViewer" onclick="sendToViewer()" disabled>
+        📡 Send to Viewer
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = '';   // same origin
+
+  // Store study file lists from scan response
+  let studyFilesMap = [];  // [{files: [...], study_uid: ...}, ...]
+
+  // Store Orthanc study IDs returned after upload (for viewer selection)
+  let pendingOrthancStudyIds = [];
+  let selectedModality = '';
+  // ── Helpers ──────────────────────────────────────────
+  const $ = id => document.getElementById(id);
+
+  function setStatus(text, state = '') {
+    $('statusText').textContent = text;
+    const dot = $('statusDot');
+    dot.className = 'dot';
+    if (state) dot.classList.add(state);
+  }
+
+  function showProgress(show, pct = 0, label = 'Scanning…') {
+    const wrap = $('progressWrap');
+    wrap.classList.toggle('show', show);
+    $('progressFill').style.width = pct + '%';
+    $('progressLabel').textContent = label;
+  }
+
+  function formatDate(raw) {
+    if (!raw || raw.length < 8) return raw || '—';
+    return raw.slice(0,4) + '-' + raw.slice(4,6) + '-' + raw.slice(6,8);
+  }
+
+  // ── Auto-detect Drives on load ──────────────────────
+  async function loadDrives() {
+    const grid = $('driveGrid');
+    const msg  = $('detectingMsg');
+    const none = $('noDrivesMsg');
+    grid.style.display = 'none';
+    grid.innerHTML = '';
+    none.style.display = 'none';
+    msg.style.display = 'flex';
+
+    try {
+      const r = await fetch(API + '/detect-drives');
+      const data = await r.json();
+      msg.style.display = 'none';
+
+      if (data.drives && data.drives.length) {
+        grid.style.display = 'grid';
+        data.drives.forEach(d => {
+          const card = document.createElement('div');
+          card.className = 'drive-card';
+          card.innerHTML = `
+            <span class="drive-icon">💿</span>
+            <span class="drive-label">${d}</span>
+            <span class="drive-type">Removable</span>`;
+          card.onclick = () => {
+            // Deselect others
+            grid.querySelectorAll('.drive-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            $('pathInput').value = d;
+            setStatus('Drive selected: ' + d, 'active');
+          };
+          grid.appendChild(card);
+        });
+        setStatus(data.drives.length + ' drive(s) detected', 'active');
+      } else {
+        none.style.display = 'block';
+        setStatus('No removable drives found — enter a path manually', '');
+      }
+    } catch (e) {
+      msg.style.display = 'none';
+      none.style.display = 'block';
+      none.textContent = 'Could not detect drives — enter a path manually.';
+      setStatus('Drive detection unavailable', '');
+    }
+  }
+
+  // Auto-load on page open
+  window.addEventListener('DOMContentLoaded', loadDrives);
+
+  // ── Scan ─────────────────────────────────────────────
+  async function doScan() {
+    const path = $('pathInput').value.trim();
+    if (!path) { setStatus('Enter a source path first', 'error'); return; }
+
+    setStatus('Scanning…', 'loading');
+    showProgress(true, 15, 'Scanning directory…');
+    $('scanResults').classList.remove('show');
+    $('importResult').classList.remove('show');
+    $('btnScan').disabled = true;
+
+    try {
+      showProgress(true, 40, 'Reading DICOM headers…');
+      const r = await fetch(API + '/scan?path=' + encodeURIComponent(path));
+      const data = await r.json();
+      showProgress(true, 100, 'Done');
+
+      if (data.error) {
+        setStatus(data.error, 'error');
+        showProgress(false);
+        $('btnScan').disabled = false;
+        return;
+      }
+
+      // Populate stats
+      $('statPatients').textContent = data.patients;
+      $('statStudies').textContent  = data.studies;
+      $('statImages').textContent   = data.total_images;
+      $('statTime').textContent     = data.elapsed_sec < 1
+        ? Math.round(data.elapsed_sec * 1000) + 'ms'
+        : data.elapsed_sec.toFixed(1) + 's';
+
+      // Populate table & store file lists
+      const tbody = $('studyTableBody');
+      tbody.innerHTML = '';
+      studyFilesMap = [];
+      if (data.studies_list && data.studies_list.length) {
+        data.studies_list.forEach((s, idx) => {
+          studyFilesMap.push({ files: s.files || [], study_uid: s.study_uid });
+          const tr = document.createElement('tr');
+          tr.id = 'study-row-' + idx;
+          tr.innerHTML = `
+            <td>${s.patient || '—'}</td>
+            <td>${s.patient_id || '—'}</td>
+            <td>${s.patient_sex || '—'}</td>
+            <td>${s.patient_age || '—'}</td>
+            <td>${s.description || '—'}</td>
+            <td>${formatDate(s.date)}</td>
+            <td><span class="badge">${s.modality || '?'}</span></td>
+            <td>${s.image_count}</td>
+            <td>
+              <button class="btn btn-primary btn-sm" id="btnUpload-${idx}" onclick="doUploadStudy(${idx})">
+                ⬆ Upload
+              </button>
+            </td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      $('scanResults').classList.add('show');
+      setStatus(`Scan complete — ${data.patients} patient(s), ${data.studies} study(ies)`, 'active');
+      setTimeout(() => showProgress(false), 600);
+    } catch (e) {
+      setStatus('Scan failed — ' + e.message, 'error');
+      showProgress(false);
+    }
+    $('btnScan').disabled = false;
+  }
+
+  // ── Upload Single Study ────────────────────────────────
+  async function doUploadStudy(idx) {
+    const study = studyFilesMap[idx];
+    if (!study || !study.files.length) {
+      setStatus('No files for this study', 'error');
+      return;
+    }
+
+    const btn = $('btnUpload-' + idx);
+    btn.disabled = true;
+    btn.textContent = 'Uploading…';
+    setStatus(`Uploading study ${idx + 1} (${study.files.length} files)…`, 'loading');
+    showProgress(true, 5, 'Starting upload…');
+
+    let pollId = setInterval(async () => {
+      try {
+        const r = await fetch(API + '/progress');
+        const d = await r.json();
+        if (d.total > 0) {
+          const pct = Math.min(99, Math.round((d.done / d.total) * 100));
+          showProgress(true, pct, `${d.done} / ${d.total} files (${pct}%)`);
+        }
+      } catch(_){}
+    }, 1000);
+
+    try {
+      const r = await fetch(API + '/upload-study', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ files: study.files }),
+      });
+      const data = await r.json();
+      clearInterval(pollId);
+      showProgress(true, 100, 'Upload complete');
+
+      btn.outerHTML = `<span class="uploaded-label">✓ Done</span>`;
+
+      const banner = $('importResult');
+      banner.className = 'result-banner show success';
+      banner.innerHTML = `
+        <span class="icon">✓</span>
+        <div><strong>Study Uploaded</strong><br>Files: <strong>${data.total_scanned}</strong> · Indexed: <strong>${data.successfully_indexed}</strong> · Time: <strong>${data.total_time_sec}s</strong></div>`;
+
+      setStatus('Study uploaded successfully', 'active');
+      setTimeout(() => showProgress(false), 800);
+
+      // Show viewer selection if studies were indexed
+      if (data.orthanc_study_ids && data.orthanc_study_ids.length) {
+        pendingOrthancStudyIds = data.orthanc_study_ids;
+        showViewerModal();
+      }
+    } catch (e) {
+      clearInterval(pollId);
+      btn.disabled = false;
+      btn.textContent = '⬆ Upload';
+      const banner = $('importResult');
+      banner.className = 'result-banner show error';
+      banner.innerHTML = `<span class="icon">✕</span><div><strong>Upload Failed</strong><br>${e.message}</div>`;
+      setStatus('Upload failed', 'error');
+      showProgress(false);
+    }
+  }
+
+  // ── Import All ─────────────────────────────────────────
+  async function doImport() {
+    setStatus('Uploading all to Orthanc…', 'loading');
+    showProgress(true, 5, 'Starting upload…');
+    $('btnImport').disabled = true;
+    $('importResult').classList.remove('show');
+
+    let pollId = setInterval(async () => {
+      try {
+        const r = await fetch(API + '/progress');
+        const d = await r.json();
+        if (d.total > 0) {
+          const pct = Math.min(99, Math.round((d.done / d.total) * 100));
+          showProgress(true, pct, `${d.done} / ${d.total} files (${pct}%)`);
+        }
+      } catch(_){}
+    }, 1500);
+
+    try {
+      const r = await fetch(API + '/fast-import', { method: 'POST' });
+      const data = await r.json();
+      clearInterval(pollId);
+      showProgress(true, 100, 'Upload complete');
+
+      // Mark all rows as done
+      studyFilesMap.forEach((_, i) => {
+        const btn = $('btnUpload-' + i);
+        if (btn) btn.outerHTML = `<span class="uploaded-label">✓ Done</span>`;
+      });
+
+      const banner = $('importResult');
+      banner.className = 'result-banner show success';
+      banner.innerHTML = `
+        <span class="icon">✓</span>
+        <div><strong>Import Complete</strong><br>Scanned: <strong>${data.total_scanned}</strong> files · Indexed: <strong>${data.successfully_indexed}</strong> instances · Time: <strong>${data.total_time_sec}s</strong></div>`;
+
+      setStatus('Upload complete', 'active');
+      setTimeout(() => showProgress(false), 800);
+
+      // Show viewer selection if studies were indexed
+      if (data.orthanc_study_ids && data.orthanc_study_ids.length) {
+        pendingOrthancStudyIds = data.orthanc_study_ids;
+        showViewerModal();
+      }
+    } catch (e) {
+      clearInterval(pollId);
+      const banner = $('importResult');
+      banner.className = 'result-banner show error';
+      banner.innerHTML = `<span class="icon">✕</span><div><strong>Import Failed</strong><br>${e.message}</div>`;
+      setStatus('Upload failed', 'error');
+      showProgress(false);
+    }
+    $('btnImport').disabled = false;
+  }
+
+  // ── Viewer Selection Modal ──────────────────────────────
+  function showViewerModal() {
+    const modal = $('viewerModal');
+    selectedModality = '';
+    $('btnSendViewer').disabled = true;
+    $('modalStudyCount').textContent = pendingOrthancStudyIds.length + ' study(ies) ready to send';
+    $('modalLoading').style.display = 'flex';
+    $('modalityGrid').style.display = 'none';
+    $('noModalitiesMsg').style.display = 'none';
+    $('modalActions').style.display = 'none';
+    $('viewerSuccessBanner').classList.remove('show');
+    modal.classList.add('show');
+    loadModalities();
+  }
+
+  function closeViewerModal() {
+    $('viewerModal').classList.remove('show');
+  }
+
+  // Close modal on overlay click (not on inner box)
+  $('viewerModal').addEventListener('click', function(e) {
+    if (e.target === this) closeViewerModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeViewerModal();
+  });
+
+  async function loadModalities() {
+    try {
+      const r = await fetch(API + '/modalities');
+      const data = await r.json();
+
+      $('modalLoading').style.display = 'none';
+
+      if (data.modalities && data.modalities.length) {
+        const grid = $('modalityGrid');
+        grid.innerHTML = '';
+        grid.style.display = 'grid';
+        $('modalActions').style.display = 'flex';
+
+        data.modalities.forEach(name => {
+          const card = document.createElement('div');
+          card.className = 'modality-card';
+          card.innerHTML = `
+            <span class="mod-icon">🖥️</span>
+            <span class="mod-name">${name}</span>`;
+          card.onclick = () => {
+            grid.querySelectorAll('.modality-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            selectedModality = name;
+            $('btnSendViewer').disabled = false;
+          };
+          grid.appendChild(card);
+        });
+
+        // Auto-select if only one modality
+        if (data.modalities.length === 1) {
+          const firstCard = grid.querySelector('.modality-card');
+          firstCard.classList.add('selected');
+          selectedModality = data.modalities[0];
+          $('btnSendViewer').disabled = false;
+        }
+      } else {
+        $('noModalitiesMsg').style.display = 'block';
+        $('noModalitiesMsg').innerHTML = `
+          <div class="icon">📡</div>
+          <div><strong>No DICOM viewers registered</strong></div>
+          <div style="margin-top:6px;">Register a viewer (RadiAnt, OsiriX, Horos, etc.) in<br>
+          Orthanc → Configuration → DicomModalities</div>`;
+        $('modalActions').style.display = 'flex';
+        $('btnSendViewer').style.display = 'none';
+      }
+    } catch (e) {
+      $('modalLoading').style.display = 'none';
+      $('noModalitiesMsg').style.display = 'block';
+      $('noModalitiesMsg').innerHTML = `
+        <div class="icon">⚠️</div>
+        <div>Could not fetch modalities from Orthanc</div>`;
+      $('modalActions').style.display = 'flex';
+      $('btnSendViewer').style.display = 'none';
+    }
+  }
+
+  async function sendToViewer() {
+    if (!selectedModality || !pendingOrthancStudyIds.length) return;
+
+    const btn = $('btnSendViewer');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;"></span> Sending…';
+
+    try {
+      const r = await fetch(API + '/send-to-viewer', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          modality: selectedModality,
+          study_ids: pendingOrthancStudyIds,
+        }),
+      });
+      const data = await r.json();
+
+      if (r.ok) {
+        closeViewerModal();
+        const banner = $('viewerSuccessBanner');
+        banner.classList.add('show');
+        banner.innerHTML = `<span>📡</span> <strong>${data.studies_sent} study(ies)</strong> sent to <strong>${data.modality}</strong> via C-STORE`;
+        setStatus(`Studies sent to ${data.modality}`, 'active');
+        setTimeout(() => banner.classList.remove('show'), 8000);
+      } else {
+        btn.disabled = false;
+        btn.innerHTML = '📡 Send to Viewer';
+        setStatus('C-STORE failed: ' + (data.error || 'Unknown error'), 'error');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.innerHTML = '📡 Send to Viewer';
+      setStatus('C-STORE request failed: ' + e.message, 'error');
+    }
+  }
+</script>
+</body>
+</html>

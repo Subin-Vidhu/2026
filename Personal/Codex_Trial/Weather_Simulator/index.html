@@ -1,0 +1,52 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Interactive Weather Simulator</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body class="weather-rain day">
+  <canvas id="weather-canvas" aria-hidden="true"></canvas>
+  <div id="flash-overlay" aria-hidden="true"></div>
+
+  <main class="app">
+    <section class="icon-stage" aria-live="polite">
+      <div id="weather-icon" class="weather-icon rain" role="img" aria-label="Rain weather icon">
+        <div class="icon-core"></div>
+      </div>
+    </section>
+
+    <section class="control-panel" aria-label="Weather controls">
+      <h1>Weather Simulator</h1>
+
+      <label for="weather-select">Weather Type</label>
+      <select id="weather-select">
+        <option value="rain" selected>Rain</option>
+        <option value="snow">Snow</option>
+        <option value="sun">Sun</option>
+      </select>
+
+      <label for="intensity">Intensity <span id="intensity-value">55</span>%</label>
+      <input id="intensity" type="range" min="1" max="100" value="55" />
+
+      <label for="wind">Wind <span id="wind-value">35</span>%</label>
+      <input id="wind" type="range" min="0" max="100" value="35" />
+
+      <div class="toggles">
+        <label class="switch-wrap" for="sound-toggle">
+          <input id="sound-toggle" type="checkbox" checked />
+          <span>Sound</span>
+        </label>
+
+        <label class="switch-wrap" for="day-night-toggle">
+          <input id="day-night-toggle" type="checkbox" checked />
+          <span>Day Mode</span>
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <script src="./script.js"></script>
+</body>
+</html>
