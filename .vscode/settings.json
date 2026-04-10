@@ -1,3 +1,9 @@
 {
-    "liveServer.settings.port": 5502
+    "liveServer.settings.port": 5502,
+    "terminal.integrated.cwd": "D:/2026/Coursera/3_Ultimate Guide to FastAPI and Backend Development Specialization",
+    "python.defaultInterpreterPath": "D:/2026/Coursera/3_Ultimate Guide to FastAPI and Backend Development Specialization/0000__venv/fastapi_venv/Scripts/python.exe",
+    "python.terminal.activateEnvironment": true,
+    "terminal.integrated.env.windows": {
+        "PATH": "D:\\2026\\Coursera\\3_Ultimate Guide to FastAPI and Backend Development Specialization\\0000__venv\\fastapi_venv\\Scripts;${env:PATH}"
+    }
 }
