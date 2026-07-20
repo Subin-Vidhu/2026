@@ -1,0 +1,1 @@
+- Couser [Link](https://www.coursera.org/learn/develop-generative-ai-applications-get-started//)
