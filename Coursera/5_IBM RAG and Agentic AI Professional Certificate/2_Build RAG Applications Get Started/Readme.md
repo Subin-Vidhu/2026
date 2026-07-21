@@ -1,0 +1,1 @@
+- Course [Link](https://www.coursera.org/learn/build-rag-applications-get-started)
