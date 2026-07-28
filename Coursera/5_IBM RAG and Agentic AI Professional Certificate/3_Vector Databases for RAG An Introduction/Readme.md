@@ -1,0 +1,1 @@
+Course [Link](https://www.coursera.org/learn/vector-databases-for-rag-an-introduction)
