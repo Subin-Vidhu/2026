@@ -34,7 +34,7 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 	- [IBM AI Engineering Professional Certificate](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/Readme.md)
 		- [ML with Python](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/1_ML%20with%20Python/Readme.md) | [Course Certificate](Coursera/2_IBM%20AI%20Engineering%20Professional%20Certificate/1_ML%20with%20Python/Machine%20Learning%20with%20Python.pdf)
 - edX
-	- _Add courses as folders under `edX/`_
+	- _Add courses as fo8ders under `edX/`_
 
 ### Course Templates
 - Each course folder keeps a README with: course link, status, duration, stack, goals, outputs, checklist, experiments, takeaways.
@@ -56,6 +56,6 @@ Tracking what I study, build, and ship throughout 2026. Expect course notes, qui
 
 *Happy coding and learning in 2026!*
 
-- New Life: 2026 | +017 | - UK Days 
+- New Life: 2026 | +018 | - UK Days 
 
 - Coursera Plus Renewed on Jan 18, 2026
