@@ -1,0 +1,1 @@
+Course [Link](https://www.coursera.org/learn/build-multimodal-generative-ai-applications)
