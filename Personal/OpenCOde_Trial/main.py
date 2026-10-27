@@ -28,24 +28,8 @@ ORTHANC_BASE = "http://localhost:8041"
 ORTHANC_AUTH = ("admin", "password")
 SOURCE_PATH = r"G:\A"
 
-# Optimized HTTP client settings for maximum throughput
-HTTP_CLIENT_LIMITS = httpx.Limits(
-    max_connections=120,
-    max_keepalive_connections=100,
-    keepalive_expiry=30.0
-)
-http_client = httpx.AsyncClient(
-    auth=ORTHANC_AUTH,
-    timeout=httpx.Timeout(90.0, connect=10.0),
-    http2=True,
-    limits=HTTP_CLIENT_LIMITS
-)
-# SOURCE_PATH = r"G:\A"
-# SOURCE_PATH = r"C:\Users\Subin-PC\Downloads\DIcom_test_data\RADON_TEST_DATA\cd_test_data"
-
-# CHANGE 1: Raise this dramatically — Orthanc is local, no network RTT
-# 8 was conservative for a real network. For localhost, 64-96 is safe for fast SSDs
-MAX_CONCURRENT_UPLOADS = 80
+# Optimized per-request client settings
+MAX_CONCURRENT_UPLOADS = 96
 semaphore = asyncio.Semaphore(MAX_CONCURRENT_UPLOADS)
 
 progress_counter = 0
@@ -522,7 +506,8 @@ async def send_to_viewer(orthanc_study_ids: list) -> None:
         print("[CSTORE] No Orthanc study IDs collected — skipping C-STORE.")
         return
 
-    modalities = await _list_modalities(http_client)
+    async with create_orthanc_client() as client:
+        modalities = await _list_modalities(client)
 
     print(f"[CSTORE] Orthanc modalities found: {modalities if modalities else 'none'}")
     print(f"[CSTORE] {len(orthanc_study_ids)} study ID(s) ready for viewer selection via frontend.")
@@ -549,7 +534,8 @@ async def api_detect_drives():
 @app.get("/modalities")
 async def api_modalities():
     """Return list of DICOM modalities (viewers) registered in Orthanc."""
-    modalities = await _list_modalities(http_client)
+    async with create_orthanc_client() as client:
+        modalities = await _list_modalities(client)
     return {"modalities": modalities}
 
 
@@ -567,7 +553,8 @@ async def api_send_to_viewer(payload: dict):
     if not study_ids:
         return JSONResponse({"error": "No study IDs provided"}, status_code=400)
 
-    ok = await _cstore_to_modality(http_client, modality, study_ids)
+    async with create_orthanc_client() as client:
+        ok = await _cstore_to_modality(client, modality, study_ids)
 
     if ok:
         return {"status": "success", "modality": modality, "studies_sent": len(study_ids)}
@@ -696,8 +683,9 @@ async def upload_study(payload: dict):
 
     print(f"[{get_ts()}] [UPLOAD-STUDY] Uploading {len(file_list)} file(s)...")
 
-    tasks = [upload_single_file(http_client, f, len(file_list)) for f in file_list]
-    results = await asyncio.gather(*tasks)
+    async with create_orthanc_client() as client:
+        tasks = [upload_single_file(client, f, len(file_list)) for f in file_list]
+        results = await asyncio.gather(*tasks)
 
     captured = [i for i in results if i is not None]
     duration = time.monotonic() - t_start
@@ -717,6 +705,19 @@ async def upload_study(payload: dict):
     }
 
 
+def create_orthanc_client():
+    """Create a fresh optimized HTTP client for Orthanc uploads."""
+    return httpx.AsyncClient(
+        auth=ORTHANC_AUTH,
+        timeout=httpx.Timeout(90.0, connect=15.0),
+        http2=True,
+        limits=httpx.Limits(
+            max_connections=MAX_CONCURRENT_UPLOADS,
+            max_keepalive_connections=MAX_CONCURRENT_UPLOADS,
+        )
+    )
+
+
 @app.post("/fast-import")
 async def fast_import():
     global progress_counter, progress_total
@@ -734,8 +735,9 @@ async def fast_import():
     progress_total = total_files
     print(f"[{get_ts()}] [SERVER] Found {total_files} files. Starting import...")
 
-    tasks = [upload_single_file(http_client, f, total_files) for f in files_to_process]
-    results = await asyncio.gather(*tasks)
+    async with create_orthanc_client() as client:
+        tasks = [upload_single_file(client, f, total_files) for f in files_to_process]
+        results = await asyncio.gather(*tasks)
 
     captured = [i for i in results if i is not None]
     duration = time.monotonic() - t_start
